@@ -1,0 +1,25 @@
+{
+  "tests": [
+    {
+      "name": "test_suma_basico",
+      "points": 3,
+      "visibility": "public"
+    },
+    {
+      "name": "test_suma_negativos",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_suma_negativos_avanzado",
+      "points": 3,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_suma_grande",
+      "points": 2,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

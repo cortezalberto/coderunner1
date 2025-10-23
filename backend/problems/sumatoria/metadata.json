@@ -1,0 +1,11 @@
+{
+  "title": "Sumatoria simple",
+  "difficulty": "easy",
+  "tags": [
+    "basics",
+    "functions",
+    "arithmetic"
+  ],
+  "timeout_sec": 3.0,
+  "memory_mb": 128
+}
