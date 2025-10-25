@@ -9,9 +9,10 @@ class Settings:
     """Application settings with environment variable support"""
 
     # Database
+    # Use postgres service name for Docker, localhost for local development
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://playground:playground@localhost:5432/playground"
+        "postgresql://playground:playground@postgres:5432/playground"
     )
 
     # Redis

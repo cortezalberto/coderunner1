@@ -3,7 +3,7 @@ Submission management service
 """
 from typing import Dict, Any, Optional, List
 from datetime import datetime
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from ..models import Submission, TestResult
 from ..exceptions import ValidationError
@@ -58,8 +58,17 @@ class SubmissionService:
         return submission
 
     def get_by_job_id(self, db: Session, job_id: str) -> Optional[Submission]:
-        """Get submission by job_id"""
-        return db.query(Submission).filter(Submission.job_id == job_id).first()
+        """
+        Get submission by job_id with eager loading of test_results.
+
+        Uses joinedload to avoid N+1 queries when accessing test_results.
+        """
+        return (
+            db.query(Submission)
+            .options(joinedload(Submission.test_results))
+            .filter(Submission.job_id == job_id)
+            .first()
+        )
 
     def get_by_id(self, db: Session, submission_id: int) -> Optional[Submission]:
         """Get submission by id"""
@@ -151,7 +160,11 @@ class SubmissionService:
         problem_id: Optional[str] = None,
         student_id: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Get recent submissions with filters"""
+        """
+        Get recent submissions with filters.
+
+        Uses eager loading to avoid N+1 queries when accessing test_results.
+        """
         query = db.query(Submission)
 
         if problem_id:
@@ -160,7 +173,13 @@ class SubmissionService:
             query = query.filter(Submission.student_id == student_id)
 
         total = query.count()
-        submissions = query.order_by(Submission.created_at.desc()).offset(offset).limit(limit).all()
+        submissions = (
+            query.options(joinedload(Submission.test_results))
+            .order_by(Submission.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
         results = []
         for sub in submissions:

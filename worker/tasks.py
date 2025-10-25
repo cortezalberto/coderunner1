@@ -7,6 +7,7 @@ import pathlib
 import json
 import os
 from datetime import datetime
+from typing import Optional
 from sqlalchemy.orm import Session
 
 # Importar modelos y database
@@ -15,15 +16,43 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 from backend.database import SessionLocal
 from backend.models import Submission, TestResult
+from backend.config import settings
+from backend.logging_config import get_logger
 
 # Importar services
 from .services.docker_runner import docker_runner
 from .services.rubric_scorer import rubric_scorer
 
+logger = get_logger(__name__)
+
 
 DEFAULT_TIMEOUT = 5.0  # segundos
 DEFAULT_MEMORY_MB = 256
 WORKSPACE_DIR = os.getenv("WORKSPACE_DIR", "/workspaces")  # Directorio dentro del worker container
+
+
+def _copy_test_file(src: pathlib.Path, dest: pathlib.Path, file_type: str) -> None:
+    """
+    Copy test file with proper permissions and error handling.
+
+    Args:
+        src: Source test file path
+        dest: Destination path in workspace
+        file_type: Type of test file (e.g., "public", "hidden", "legacy")
+
+    Raises:
+        Exception: If file copy fails
+    """
+    try:
+        shutil.copy2(src, dest)
+        os.chmod(dest, 0o666)
+        logger.info(f"Copied {file_type} test file", extra={"src": str(src), "dest": str(dest)})
+    except Exception as e:
+        logger.error(
+            f"Failed to copy {file_type} test file",
+            extra={"src": str(src), "dest": str(dest), "error": str(e)}
+        )
+        raise
 
 
 def run_submission_in_sandbox(submission_id: int, problem_id: str, code: str,
@@ -54,11 +83,16 @@ def run_submission_in_sandbox(submission_id: int, problem_id: str, code: str,
         timeout_sec = float(timeout_sec) if timeout_sec else DEFAULT_TIMEOUT
         memory_mb = int(memory_mb) if memory_mb else DEFAULT_MEMORY_MB
 
-        # Buscar metadata del problema
-        problem_dir = pathlib.Path("/app/backend/problems") / problem_id
+        # Buscar metadata del problema usando settings
+        problem_dir = pathlib.Path(settings.PROBLEMS_DIR) / problem_id
         if not problem_dir.exists():
+            # Fallback para desarrollo local
             problem_dir = pathlib.Path("backend/problems") / problem_id
         if not problem_dir.exists():
+            logger.error(
+                "Problem directory not found",
+                extra={"problem_id": problem_id, "search_paths": [settings.PROBLEMS_DIR, "backend/problems"]}
+            )
             raise Exception(f"Problem {problem_id} not found")
 
         meta_path = problem_dir / "metadata.json"
@@ -83,7 +117,7 @@ def run_submission_in_sandbox(submission_id: int, problem_id: str, code: str,
             (workspace_path / "student_code.py").write_text(code, encoding="utf-8")
             os.chmod(workspace_path / "student_code.py", 0o666)
 
-            # Copiar tests públicos y ocultos
+            # Copiar tests públicos y ocultos usando helper function
             tests_public = problem_dir / "tests_public.py"
             tests_hidden = problem_dir / "tests_hidden.py"
 
@@ -91,15 +125,12 @@ def run_submission_in_sandbox(submission_id: int, problem_id: str, code: str,
             if not tests_public.exists() and not tests_hidden.exists():
                 tests_legacy = problem_dir / "tests.py"
                 if tests_legacy.exists():
-                    shutil.copy2(tests_legacy, workspace_path / "tests_public.py")
-                    os.chmod(workspace_path / "tests_public.py", 0o666)
+                    _copy_test_file(tests_legacy, workspace_path / "tests_public.py", "legacy")
             else:
                 if tests_public.exists():
-                    shutil.copy2(tests_public, workspace_path / "tests_public.py")
-                    os.chmod(workspace_path / "tests_public.py", 0o666)
+                    _copy_test_file(tests_public, workspace_path / "tests_public.py", "public")
                 if tests_hidden.exists():
-                    shutil.copy2(tests_hidden, workspace_path / "tests_hidden.py")
-                    os.chmod(workspace_path / "tests_hidden.py", 0o666)
+                    _copy_test_file(tests_hidden, workspace_path / "tests_hidden.py", "hidden")
 
             # Copiar conftest.py para generar report.json
             conftest_content = '''"""

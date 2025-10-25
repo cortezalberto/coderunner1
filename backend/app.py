@@ -107,7 +107,7 @@ def submit(req: SubmissionRequest, db: Session = Depends(get_db)):
 
 
 @app.get("/api/result/{job_id}")
-def get_result(job_id: str, db: Session = Depends(get_db)):
+def get_result(job_id: str, db: Session = Depends(get_db)) -> Dict[str, Any]:
     """Get result of a submission by job_id"""
     # Find submission in DB
     submission = submission_service.get_by_job_id(db=db, job_id=job_id)
@@ -142,7 +142,7 @@ def get_result(job_id: str, db: Session = Depends(get_db)):
 # ==================== ADMIN ENDPOINTS ====================
 
 @app.get("/api/admin/summary")
-def admin_summary(db: Session = Depends(get_db)):
+def admin_summary(db: Session = Depends(get_db)) -> Dict[str, Any]:
     """Get summary statistics for admin panel"""
     return submission_service.get_statistics(db)
 
@@ -154,7 +154,7 @@ def admin_submissions(
     problem_id: Optional[str] = None,
     student_id: Optional[str] = None,
     db: Session = Depends(get_db)
-):
+) -> Dict[str, Any]:
     """Get recent submissions with filters"""
     return submission_service.list_submissions(
         db=db,
@@ -166,7 +166,7 @@ def admin_submissions(
 
 
 @app.get("/api/subjects")
-def list_subjects():
+def list_subjects() -> Dict[str, Any]:
     """Get list of all subjects (materias)"""
     from .services.subject_service import subject_service
     logger.info("Fetching list of subjects")
@@ -174,7 +174,7 @@ def list_subjects():
 
 
 @app.get("/api/subjects/{subject_id}")
-def get_subject(subject_id: str):
+def get_subject(subject_id: str) -> Dict[str, Any]:
     """Get a specific subject with its units"""
     from .services.subject_service import subject_service
     logger.info(f"Fetching subject: {subject_id}")
@@ -187,7 +187,7 @@ def get_subject(subject_id: str):
 
 
 @app.get("/api/subjects/{subject_id}/units")
-def list_units(subject_id: str):
+def list_units(subject_id: str) -> Dict[str, Any]:
     """Get all units for a specific subject"""
     from .services.subject_service import subject_service
     logger.info(f"Fetching units for subject: {subject_id}")
@@ -203,7 +203,7 @@ def list_units(subject_id: str):
 
 
 @app.get("/api/subjects/{subject_id}/units/{unit_id}/problems")
-def list_problems_by_unit(subject_id: str, unit_id: str):
+def list_problems_by_unit(subject_id: str, unit_id: str) -> Dict[str, Any]:
     """Get all problems for a specific unit"""
     from .services.subject_service import subject_service
 
@@ -231,7 +231,7 @@ def list_problems_by_unit(subject_id: str, unit_id: str):
 
 
 @app.get("/api/problems/hierarchy")
-def get_problems_hierarchy():
+def get_problems_hierarchy() -> Dict[str, Any]:
     """Get complete hierarchy: subjects -> units -> problems"""
     from .services.subject_service import subject_service
 
@@ -255,7 +255,7 @@ def get_problems_hierarchy():
 
 
 @app.get("/api/health")
-def health_check():
+def health_check() -> Dict[str, Any]:
     """Health check endpoint with dependency checks"""
     from datetime import datetime
     from fastapi.responses import JSONResponse

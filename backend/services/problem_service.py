@@ -4,6 +4,7 @@ Problem management service
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 import json
+from functools import lru_cache
 from ..config import settings
 from ..exceptions import ProblemNotFoundError, ValidationError
 from ..logging_config import get_logger
@@ -12,11 +13,17 @@ logger = get_logger(__name__)
 
 
 class ProblemService:
-    """Service for managing problems"""
+    """
+    Service for managing problems with caching support.
+
+    Uses LRU cache for list_all() to avoid repeated filesystem reads.
+    Call invalidate_cache() when problems are added/modified.
+    """
 
     def __init__(self):
         self.problems_dir = self._resolve_problems_dir()
         self._subject_service = None  # Lazy load to avoid circular import
+        self._cache_enabled = True
 
     def _resolve_problems_dir(self) -> Path:
         """Resolve problems directory with fallback logic"""
@@ -89,8 +96,17 @@ class ProblemService:
                 exc_info=True
             )
 
-    def list_all(self) -> Dict[str, Dict[str, Any]]:
-        """List all available problems with metadata"""
+    @lru_cache(maxsize=1)
+    def _list_all_cached(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Cached version of list_all().
+
+        Returns:
+            Dictionary mapping problem_id to problem data (metadata, prompt, starter)
+
+        Note:
+            This is a cached method. Call invalidate_cache() when problems change.
+        """
         problems = {}
 
         for problem_dir in self.problems_dir.iterdir():
@@ -101,8 +117,41 @@ class ProblemService:
                 except Exception as e:
                     logger.error(f"Error loading problem {problem_dir.name}: {e}")
 
-        logger.info(f"Loaded {len(problems)} problems")
+        logger.info(f"Loaded {len(problems)} problems (cached)", extra={"count": len(problems)})
         return problems
+
+    def list_all(self) -> Dict[str, Dict[str, Any]]:
+        """
+        List all available problems with metadata (cached).
+
+        Returns cached results to avoid repeated filesystem reads.
+        Call invalidate_cache() when problems are added/modified.
+        """
+        if self._cache_enabled:
+            return self._list_all_cached()
+        else:
+            # Direct call without cache (for testing)
+            problems = {}
+            for problem_dir in self.problems_dir.iterdir():
+                if problem_dir.is_dir() and not problem_dir.name.startswith('.'):
+                    try:
+                        problem_data = self._load_problem_data(problem_dir)
+                        problems[problem_dir.name] = problem_data
+                    except Exception as e:
+                        logger.error(f"Error loading problem {problem_dir.name}: {e}")
+            return problems
+
+    def invalidate_cache(self) -> None:
+        """
+        Clear the problems list cache.
+
+        Call this method when:
+        - A new problem is added
+        - An existing problem is modified
+        - Problem metadata is updated
+        """
+        self._list_all_cached.cache_clear()
+        logger.info("Problem cache invalidated")
 
     def _load_problem_data(self, problem_dir: Path) -> Dict[str, Any]:
         """Load all data for a single problem"""
