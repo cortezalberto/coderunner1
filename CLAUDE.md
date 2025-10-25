@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Problem Count**: 31 problems across 8 subjects
 **Test Coverage**: 86 tests created, Phase 3: 85% complete (tests infrastructure complete)
 **Frontend**: TypeScript migration completed ✅ with dynamic logo system
+**Security**: Anti-cheating system active (anti-paste + tab monitoring) ✅
 **Documentation**: Comprehensive with user stories and use cases
 **Code Quality**: Health Score 8.2/10 (improved from 7.5) ✅
 
@@ -24,6 +25,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Docker: .dockerignore created (30-40% image size reduction)
 - Frontend: **Migrated to TypeScript** with full type safety, race condition fixes, localStorage persistence, AbortController cleanup
 - Frontend: **Dynamic Logo System** - Logos change based on selected subject (supports single and multi-logo displays)
+- Frontend: **Anti-Cheating System** - Comprehensive academic integrity with anti-paste and tab monitoring (5 event listeners, progressive warnings)
 - Backend: Metadata validation, health check with dependencies, None-safety
 - Backend: **8 subjects** configured with hierarchical unit system
 - Architecture: Service layer (100%), Pydantic v2 schemas, structured logging
@@ -478,21 +480,33 @@ Additional safeguards:
 - Non-root user (uid 1000)
 - Workspace cleanup after execution
 
-**3. Anti-Paste Protection** ([frontend/src/components/Playground.tsx](frontend/src/components/Playground.tsx))
+**3. Anti-Cheating System** ([frontend/src/components/Playground.tsx](frontend/src/components/Playground.tsx))
 
-Prevents students from pasting AI-generated code to encourage active learning:
+Comprehensive academic integrity enforcement with two main components:
+
+**a) Anti-Paste Protection**:
 - Blocks Ctrl/Cmd+V keyboard shortcut
-- Blocks right-click → paste
+- Blocks right-click → paste in editor
 - Blocks DOM-level paste events
-- Shows educational warning message
+- Shows educational warning banner
+
+**b) Tab Monitoring System**:
+- Detects tab switching (visibilitychange event)
+- Detects window minimization (blur event)
+- Progressive 2-warning system before lockout
+- Blocks right-click globally (contextmenu)
+- Blocks keyboard shortcuts: Ctrl+T, Ctrl+N, Ctrl+W
+- Prevents easy tab closing (beforeunload)
+- Shows red warning banner: "🚨 ADVERTENCIA DE INTEGRIDAD ACADÉMICA 🚨"
+- After 2 violations: Closes browser with message "🚫 NO TE DEJO VER OTRA PÁGINA, SOY UN VIEJO GARCA! 🚫"
 
 Benefits:
-- Fosters active code writing
-- Improves learning retention
-- Reduces AI-generated code copying
-- Maintains fair assessment
+- Prevents AI-generated code pasting
+- Prevents copying from external sources (other tabs/windows)
+- Maintains exam integrity
+- Progressive warnings educate before enforcement
 
-**Important**: Does NOT block typing, autocomplete, or legitimate learning aids. See [ANTI_PASTE_FEATURE.md](ANTI_PASTE_FEATURE.md) for details.
+**Important**: Does NOT block typing, autocomplete, or legitimate learning aids. Does NOT prevent using the same tab for reading documentation. See [ANTI_PASTE_FEATURE.md](ANTI_PASTE_FEATURE.md) for complete technical details.
 
 **Limitations**: For high-stakes environments, consider gVisor runtime, separate VM/host for worker, or static analysis.
 
