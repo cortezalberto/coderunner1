@@ -17,26 +17,46 @@ def validate_code_length(code: str) -> None:
 
 def validate_code_safety(code: str) -> None:
     """Basic safety checks for submitted code"""
-    dangerous_imports = [
-        "import os",
-        "import subprocess",
-        "import sys",
-        "import socket",
-        "import requests",
-        "from os import",
-        "from subprocess import",
+    # Remove all whitespace characters for bypass detection
+    import re
+    code_normalized = re.sub(r'\s+', '', code.lower())
+
+    dangerous_patterns = [
+        # Dangerous imports
+        "importos",
+        "importsubprocess",
+        "importsys",
+        "importsocket",
+        "importrequests",
+        "importurllib",
+        "importshutil",
+        "importglob",
+        "importpickle",
+        "importtempfile",
+        # From imports
+        "fromosimport",
+        "fromsubprocessimport",
+        "fromsysimport",
+        # Built-in dangerous functions
         "__import__",
         "exec(",
         "eval(",
-        "compile("
+        "compile(",
+        "open(",  # Only allow in specific contexts
+        "__builtins__",
+        "getattr",
+        "setattr",
+        "delattr",
+        "globals(",
+        "locals(",
+        "vars("
     ]
 
-    code_lower = code.lower()
-    for dangerous in dangerous_imports:
-        if dangerous in code_lower:
+    for dangerous in dangerous_patterns:
+        if dangerous in code_normalized:
             raise HTTPException(
                 status_code=400,
-                detail=f"Code contains potentially dangerous pattern: {dangerous}"
+                detail=f"Code contains potentially dangerous pattern: {dangerous.replace('import', 'import ')}"
             )
 
 

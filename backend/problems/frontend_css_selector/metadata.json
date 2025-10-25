@@ -1,0 +1,9 @@
+{
+  "title": "Selector CSS básico",
+  "subject_id": "frontend",
+  "unit_id": "css-estilos",
+  "difficulty": "easy",
+  "tags": ["css", "selectores", "estilos"],
+  "timeout_sec": 5,
+  "memory_mb": 128
+}

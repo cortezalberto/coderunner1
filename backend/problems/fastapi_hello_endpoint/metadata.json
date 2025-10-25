@@ -1,0 +1,15 @@
+{
+  "title": "Endpoint GET básico en FastAPI",
+  "subject_id": "programacion-4",
+  "unit_id": "fastapi-fundamentos",
+  "difficulty": "easy",
+  "tags": [
+    "fastapi",
+    "rest-api",
+    "endpoint",
+    "get",
+    "hello-world"
+  ],
+  "timeout_sec": 5.0,
+  "memory_mb": 256
+}

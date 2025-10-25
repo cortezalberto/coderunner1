@@ -1,0 +1,9 @@
+{
+  "title": "Función JavaScript básica",
+  "subject_id": "frontend",
+  "unit_id": "javascript-basico",
+  "difficulty": "easy",
+  "tags": ["javascript", "funciones", "basico"],
+  "timeout_sec": 5,
+  "memory_mb": 128
+}

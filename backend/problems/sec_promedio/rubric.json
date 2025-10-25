@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "test_promedio_basico",
+      "points": 3,
+      "visibility": "public"
+    },
+    {
+      "name": "test_promedio_simple",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_promedio_iguales",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_promedio_decimales",
+      "points": 2,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_promedio_negativos",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

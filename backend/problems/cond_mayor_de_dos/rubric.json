@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_mayor_primero",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_mayor_segundo",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_iguales",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_negativos",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_decimales",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_cero",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

@@ -1,0 +1,1 @@
+{"tests":[{"name":"test_area_circulo_unitario","points":3,"visibility":"public"},{"name":"test_area_circulo_cinco","points":2,"visibility":"public"},{"name":"test_area_circulo_cero","points":2,"visibility":"public"},{"name":"test_area_circulo_grande","points":2,"visibility":"hidden"},{"name":"test_area_circulo_decimal","points":1,"visibility":"hidden"}],"max_points":10}

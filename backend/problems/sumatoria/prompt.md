@@ -1,11 +1,28 @@
 # Problema: Sumatoria simple
 
-Implementa una función **`suma(a, b)`** que reciba dos enteros y retorne su suma.
+Escribe un programa que lea dos números enteros desde la entrada estándar y calcule su suma.
+
+## Entrada
+Dos números enteros, uno por línea.
+
+## Salida
+La suma de los dos números.
 
 ## Ejemplos
-- `suma(2, 3) -> 5`
-- `suma(-4, 10) -> 6`
+```
+Entrada:
+2
+3
+Salida: 5
+```
 
-**Restricciones**
-- No uses input() ni prints dentro de la función.
-- La función debe llamarse exactamente `suma`.
+```
+Entrada:
+-4
+10
+Salida: 6
+```
+
+## Restricciones
+- Debes implementar la función `main()` que lea la entrada con `input()` y use `print()` para mostrar el resultado.
+- No modifiques la estructura de la función `main()`.

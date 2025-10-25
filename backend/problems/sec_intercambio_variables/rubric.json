@@ -1,0 +1,1 @@
+{"tests":[{"name":"test_intercambio_numeros","points":3,"visibility":"public"},{"name":"test_intercambio_strings","points":2,"visibility":"public"},{"name":"test_intercambio_iguales","points":2,"visibility":"public"},{"name":"test_intercambio_negativos","points":2,"visibility":"hidden"},{"name":"test_intercambio_decimales","points":1,"visibility":"hidden"}],"max_points":10}

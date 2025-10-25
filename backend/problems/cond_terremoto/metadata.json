@@ -1,0 +1,14 @@
+{
+  "title": "Clasificación de terremoto",
+  "subject_id": "programacion-1",
+  "unit_id": "estructuras-condicionales",
+  "difficulty": "hard",
+  "tags": [
+    "condicionales",
+    "elif",
+    "multiples-rangos",
+    "escala-richter"
+  ],
+  "timeout_sec": 3.0,
+  "memory_mb": 128
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Función Pura en Haskell (Paradigma Funcional)",
+  "subject_id": "paradigmas",
+  "unit_id": "paradigma-funcional",
+  "difficulty": "easy",
+  "tags": ["paradigma-funcional", "haskell", "funciones-puras", "inmutabilidad"],
+  "timeout_sec": 5,
+  "memory_mb": 128
+}

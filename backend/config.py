@@ -40,6 +40,7 @@ class Settings:
 
     # Paths
     PROBLEMS_DIR: str = os.getenv("PROBLEMS_DIR", "backend/problems")
+    BACKEND_DIR: str = os.getenv("BACKEND_DIR", "backend")
 
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")

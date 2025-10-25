@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_numero_par_basico",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_numero_impar_basico",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_cero_es_par",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_numero_par_grande",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_numero_negativo_par",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_numero_negativo_impar",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

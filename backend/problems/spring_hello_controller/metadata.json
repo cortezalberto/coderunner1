@@ -1,0 +1,14 @@
+{
+  "title": "Hello World REST Controller",
+  "subject_id": "programacion-3",
+  "unit_id": "spring-web",
+  "difficulty": "easy",
+  "tags": [
+    "spring-boot",
+    "rest-api",
+    "controller",
+    "hello-world"
+  ],
+  "timeout_sec": 5.0,
+  "memory_mb": 256
+}

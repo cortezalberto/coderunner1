@@ -1,0 +1,1 @@
+{"tests":[{"name":"test_iva_21","points":3,"visibility":"public"},{"name":"test_iva_10","points":2,"visibility":"public"},{"name":"test_iva_cero","points":2,"visibility":"public"},{"name":"test_iva_decimal","points":2,"visibility":"hidden"},{"name":"test_iva_alto","points":1,"visibility":"hidden"}],"max_points":10}

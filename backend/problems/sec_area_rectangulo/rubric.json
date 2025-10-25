@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "test_area_basico",
+      "points": 3,
+      "visibility": "public"
+    },
+    {
+      "name": "test_area_decimales",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_area_unitario",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_area_grande",
+      "points": 2,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_area_decimal_precision",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

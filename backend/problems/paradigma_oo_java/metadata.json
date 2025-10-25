@@ -1,0 +1,14 @@
+{
+  "title": "Clase Simple en Java (POO)",
+  "subject_id": "paradigmas",
+  "unit_id": "paradigma-oo",
+  "difficulty": "easy",
+  "tags": [
+    "java",
+    "poo",
+    "clases",
+    "objetos"
+  ],
+  "timeout_sec": 5.0,
+  "memory_mb": 256
+}

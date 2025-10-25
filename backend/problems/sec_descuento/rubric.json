@@ -1,0 +1,1 @@
+{"tests":[{"name":"test_descuento_20","points":3,"visibility":"public"},{"name":"test_descuento_50","points":2,"visibility":"public"},{"name":"test_descuento_cero","points":2,"visibility":"public"},{"name":"test_descuento_decimal","points":2,"visibility":"hidden"},{"name":"test_descuento_alto","points":1,"visibility":"hidden"}],"max_points":10}

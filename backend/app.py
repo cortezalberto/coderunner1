@@ -6,14 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 from redis import Redis
 from rq import Queue
 from rq.job import Job
 import pathlib
 import json
 
-from .database import get_db, init_db
+from .database import get_db, init_db, SessionLocal
 from .models import Submission, TestResult
 from .config import settings
 from .logging_config import setup_logging, get_logger
@@ -121,16 +121,21 @@ def get_result(job_id: str, db: Session = Depends(get_db)):
     # If in progress, query RQ job
     try:
         job = Job.fetch(job_id, connection=redis_conn)
+        job_status = job.get_status()
         return {
             "job_id": job_id,
-            "status": job.get_status(),
+            "status": job_status,
             "message": "Job is being processed"
         }
-    except Exception:
+    except Exception as e:
+        logger.warning(
+            f"Could not fetch RQ job {job_id}: {e}",
+            extra={"job_id": job_id, "submission_id": submission.id}
+        )
         return {
             "job_id": job_id,
             "status": submission.status,
-            "message": "Job status unknown"
+            "message": "Job status unknown - check database record"
         }
 
 
@@ -160,7 +165,149 @@ def admin_submissions(
     )
 
 
+@app.get("/api/subjects")
+def list_subjects():
+    """Get list of all subjects (materias)"""
+    from .services.subject_service import subject_service
+    logger.info("Fetching list of subjects")
+    return {"subjects": subject_service.list_all_subjects()}
+
+
+@app.get("/api/subjects/{subject_id}")
+def get_subject(subject_id: str):
+    """Get a specific subject with its units"""
+    from .services.subject_service import subject_service
+    logger.info(f"Fetching subject: {subject_id}")
+
+    subject = subject_service.get_subject(subject_id)
+    if not subject:
+        raise HTTPException(status_code=404, detail=f"Subject '{subject_id}' not found")
+
+    return subject
+
+
+@app.get("/api/subjects/{subject_id}/units")
+def list_units(subject_id: str):
+    """Get all units for a specific subject"""
+    from .services.subject_service import subject_service
+    logger.info(f"Fetching units for subject: {subject_id}")
+
+    units = subject_service.list_units_by_subject(subject_id)
+    if not units:
+        # Check if subject exists
+        subject = subject_service.get_subject(subject_id)
+        if not subject:
+            raise HTTPException(status_code=404, detail=f"Subject '{subject_id}' not found")
+
+    return {"subject_id": subject_id, "units": units}
+
+
+@app.get("/api/subjects/{subject_id}/units/{unit_id}/problems")
+def list_problems_by_unit(subject_id: str, unit_id: str):
+    """Get all problems for a specific unit"""
+    from .services.subject_service import subject_service
+
+    logger.info(f"Fetching problems for {subject_id}/{unit_id}")
+
+    # Validate subject and unit exist
+    if not subject_service.validate_subject_unit(subject_id, unit_id):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unit '{unit_id}' not found in subject '{subject_id}'"
+        )
+
+    # Get filtered problems
+    problems = problem_service.list_by_subject_and_unit(
+        subject_id=subject_id,
+        unit_id=unit_id
+    )
+
+    return {
+        "subject_id": subject_id,
+        "unit_id": unit_id,
+        "problems": problems,
+        "count": len(problems)
+    }
+
+
+@app.get("/api/problems/hierarchy")
+def get_problems_hierarchy():
+    """Get complete hierarchy: subjects -> units -> problems"""
+    from .services.subject_service import subject_service
+
+    logger.info("Fetching complete problems hierarchy")
+
+    # Get subjects and units
+    hierarchy = subject_service.get_hierarchy()
+
+    # Get problems grouped by subject and unit
+    problems_grouped = problem_service.group_by_subject_and_unit()
+
+    # Merge problems into hierarchy
+    for subject_id in hierarchy:
+        for unit_id in hierarchy[subject_id].get("units", {}):
+            # Add problem count
+            problem_ids = problems_grouped.get(subject_id, {}).get(unit_id, [])
+            hierarchy[subject_id]["units"][unit_id]["problem_count"] = len(problem_ids)
+            hierarchy[subject_id]["units"][unit_id]["problem_ids"] = problem_ids
+
+    return {"hierarchy": hierarchy}
+
+
 @app.get("/api/health")
 def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "api"}
+    """Health check endpoint with dependency checks"""
+    from datetime import datetime
+    from fastapi.responses import JSONResponse
+
+    checks = {
+        "service": "api",
+        "timestamp": datetime.utcnow().isoformat(),
+        "status": "healthy"
+    }
+
+    # Check database
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        checks["database"] = "healthy"
+    except Exception as e:
+        checks["database"] = f"unhealthy: {str(e)}"
+        checks["status"] = "degraded"
+        logger.error("Health check: Database unhealthy", exc_info=True)
+
+    # Check Redis
+    try:
+        redis_conn.ping()
+        checks["redis"] = "healthy"
+    except Exception as e:
+        checks["redis"] = f"unhealthy: {str(e)}"
+        checks["status"] = "degraded"
+        logger.error("Health check: Redis unhealthy", exc_info=True)
+
+    # Check queue
+    try:
+        queue_length = len(queue)
+        checks["queue_length"] = str(queue_length)
+        checks["queue"] = "healthy"
+    except Exception as e:
+        checks["queue"] = f"unhealthy: {str(e)}"
+        checks["status"] = "degraded"
+        logger.error("Health check: Queue unhealthy", exc_info=True)
+
+    # Check problems directory
+    try:
+        problems = problem_service.list_all()
+        problem_count = len(problems)
+        checks["problems_count"] = str(problem_count)
+        checks["problems"] = "healthy" if problem_count > 0 else "warning: no problems loaded"
+    except Exception as e:
+        checks["problems"] = f"unhealthy: {str(e)}"
+        checks["status"] = "degraded"
+        logger.error("Health check: Problems unhealthy", exc_info=True)
+
+    # Return 503 if unhealthy, 200 if healthy
+    status_code = 200 if checks["status"] == "healthy" else 503
+
+    return JSONResponse(content=checks, status_code=status_code)

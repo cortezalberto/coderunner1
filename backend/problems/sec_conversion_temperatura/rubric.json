@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "test_conversion_punto_congelacion",
+      "points": 3,
+      "visibility": "public"
+    },
+    {
+      "name": "test_conversion_punto_ebullicion",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_conversion_temperatura_ambiente",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_conversion_negativa",
+      "points": 2,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_conversion_decimal",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

@@ -1,0 +1,45 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_categoria_nino",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_categoria_adolescente",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_categoria_adulto_joven",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_categoria_adulto",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_limite_nino_adolescente",
+      "points": 2,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_limite_adolescente_adulto_joven",
+      "points": 2,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_limite_adulto_joven_adulto",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

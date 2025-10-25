@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_nota_aprobada",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_nota_desaprobada",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_nota_limite_aprobado",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_nota_perfecta",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_nota_muy_baja",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_nota_decimal",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

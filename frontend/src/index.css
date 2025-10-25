@@ -28,6 +28,24 @@ h1 {
   margin-bottom: 20px;
 }
 
+.header-with-logo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .nav-tabs {
   display: flex;
   gap: 10px;
@@ -57,15 +75,48 @@ h1 {
 
 .problem-selector {
   margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
 }
 
-.problem-selector select {
+.selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selector-group label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.selector-group select {
   width: 100%;
   padding: 12px;
   font-size: 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.selector-group select:hover:not(:disabled) {
+  border-color: #2563eb;
+}
+
+.selector-group select:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .problem-selector {
+    grid-template-columns: 1fr;
+  }
 }
 
 .editor-container {
@@ -100,11 +151,14 @@ h1 {
   margin-bottom: 15px;
 }
 
-.submit-btn {
-  width: 100%;
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.submit-btn, .reset-btn {
+  flex: 1;
   padding: 12px;
-  background: #2563eb;
-  color: white;
   border: none;
   border-radius: 4px;
   font-size: 16px;
@@ -113,12 +167,31 @@ h1 {
   transition: background 0.2s;
 }
 
-.submit-btn:hover {
+.submit-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.submit-btn:hover:not(:disabled) {
   background: #1d4ed8;
 }
 
 .submit-btn:disabled {
   background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.reset-btn {
+  background: #6b7280;
+  color: white;
+}
+
+.reset-btn:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+.reset-btn:disabled {
+  background: #d1d5db;
   cursor: not-allowed;
 }
 

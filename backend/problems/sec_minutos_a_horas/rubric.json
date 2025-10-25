@@ -1,0 +1,1 @@
+{"tests":[{"name":"test_conversion_hora_y_media","points":3,"visibility":"public"},{"name":"test_conversion_exacta","points":2,"visibility":"public"},{"name":"test_conversion_menor_hora","points":2,"visibility":"public"},{"name":"test_conversion_grande","points":2,"visibility":"hidden"},{"name":"test_conversion_dia","points":1,"visibility":"hidden"}],"max_points":10}

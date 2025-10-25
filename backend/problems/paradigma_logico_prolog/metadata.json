@@ -1,0 +1,14 @@
+{
+  "title": "Consulta Simple en Prolog (Lógico)",
+  "subject_id": "paradigmas",
+  "unit_id": "paradigma-logico",
+  "difficulty": "easy",
+  "tags": [
+    "prolog",
+    "logico",
+    "hechos",
+    "consultas"
+  ],
+  "timeout_sec": 5.0,
+  "memory_mb": 256
+}

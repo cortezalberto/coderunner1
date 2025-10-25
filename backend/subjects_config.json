@@ -1,0 +1,300 @@
+{
+  "subjects": [
+    {
+      "id": "programacion-1",
+      "name": "Programación 1",
+      "description": "Fundamentos de programación en Python",
+      "units": [
+        {
+          "id": "estructuras-secuenciales",
+          "name": "Estructuras Secuenciales",
+          "description": "Variables, tipos de datos, entrada/salida",
+          "order": 1
+        },
+        {
+          "id": "estructuras-condicionales",
+          "name": "Estructuras Condicionales",
+          "description": "If, elif, else, operadores lógicos",
+          "order": 2
+        },
+        {
+          "id": "estructuras-repetitivas",
+          "name": "Estructuras Repetitivas",
+          "description": "While, for, break, continue",
+          "order": 3
+        },
+        {
+          "id": "listas",
+          "name": "Listas",
+          "description": "Listas, métodos, slicing, comprensiones",
+          "order": 4
+        },
+        {
+          "id": "funciones",
+          "name": "Funciones en Python",
+          "description": "Definición, parámetros, return, scope",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "programacion-2",
+      "name": "Programación 2",
+      "description": "Programación orientada a objetos y estructuras de datos avanzadas",
+      "units": [
+        {
+          "id": "poo-basico",
+          "name": "POO Básico",
+          "description": "Clases, objetos, atributos, métodos",
+          "order": 1
+        },
+        {
+          "id": "herencia",
+          "name": "Herencia y Polimorfismo",
+          "description": "Herencia, polimorfismo, sobrescritura",
+          "order": 2
+        },
+        {
+          "id": "excepciones",
+          "name": "Manejo de Excepciones",
+          "description": "Try, except, finally, excepciones personalizadas",
+          "order": 3
+        },
+        {
+          "id": "archivos",
+          "name": "Manejo de Archivos",
+          "description": "Lectura, escritura, contextos",
+          "order": 4
+        },
+        {
+          "id": "estructuras-datos",
+          "name": "Estructuras de Datos",
+          "description": "Pilas, colas, árboles, grafos",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "programacion-3",
+      "name": "Programación 3",
+      "description": "Desarrollo de aplicaciones con Spring Boot y Java",
+      "units": [
+        {
+          "id": "spring-fundamentos",
+          "name": "Fundamentos de Spring",
+          "description": "IoC, Dependency Injection, Spring Context",
+          "order": 1
+        },
+        {
+          "id": "spring-boot-basico",
+          "name": "Spring Boot Básico",
+          "description": "Configuración, Auto-configuration, Starters",
+          "order": 2
+        },
+        {
+          "id": "spring-web",
+          "name": "Spring Web",
+          "description": "REST APIs, Controllers, Request/Response",
+          "order": 3
+        },
+        {
+          "id": "spring-data",
+          "name": "Spring Data JPA",
+          "description": "Repositories, Entities, Queries",
+          "order": 4
+        },
+        {
+          "id": "spring-security",
+          "name": "Spring Security",
+          "description": "Autenticación, Autorización, JWT",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "programacion-4",
+      "name": "Programación 4",
+      "description": "Desarrollo de APIs modernas con FastAPI y Python",
+      "units": [
+        {
+          "id": "fastapi-fundamentos",
+          "name": "Fundamentos de FastAPI",
+          "description": "Instalación, primeros endpoints, Path Operations",
+          "order": 1
+        },
+        {
+          "id": "fastapi-validacion",
+          "name": "Validación y Modelos",
+          "description": "Pydantic, Request/Response models, validación automática",
+          "order": 2
+        },
+        {
+          "id": "fastapi-database",
+          "name": "FastAPI con Bases de Datos",
+          "description": "SQLAlchemy, CRUD operations, async databases",
+          "order": 3
+        },
+        {
+          "id": "fastapi-security",
+          "name": "Seguridad en FastAPI",
+          "description": "OAuth2, JWT, autenticación y autorización",
+          "order": 4
+        },
+        {
+          "id": "fastapi-avanzado",
+          "name": "FastAPI Avanzado",
+          "description": "WebSockets, Background Tasks, Testing, Deployment",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "paradigmas",
+      "name": "Paradigmas de Programación",
+      "description": "Programación orientada a objetos, lógica y funcional",
+      "units": [
+        {
+          "id": "paradigma-imperativo",
+          "name": "Paradigma Imperativo",
+          "description": "Programación imperativa con Java",
+          "order": 1
+        },
+        {
+          "id": "paradigma-oo",
+          "name": "Paradigma Orientado a Objetos",
+          "description": "POO con Java - Clases, Herencia, Polimorfismo",
+          "order": 2
+        },
+        {
+          "id": "paradigma-logico",
+          "name": "Paradigma Lógico",
+          "description": "Programación lógica con Prolog - Hechos, Reglas, Consultas",
+          "order": 3
+        },
+        {
+          "id": "paradigma-funcional",
+          "name": "Paradigma Funcional",
+          "description": "Programación funcional con Haskell - Funciones puras, Inmutabilidad",
+          "order": 4
+        },
+        {
+          "id": "comparacion-paradigmas",
+          "name": "Comparación de Paradigmas",
+          "description": "Ventajas y desventajas, casos de uso",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "algoritmos",
+      "name": "Algoritmos y Estructuras de Datos",
+      "description": "Algoritmos fundamentales y estructuras de datos con PSeInt",
+      "units": [
+        {
+          "id": "estructuras-datos-basicas",
+          "name": "Estructuras de Datos Básicas",
+          "description": "Arreglos, vectores, matrices",
+          "order": 1
+        },
+        {
+          "id": "algoritmos-ordenamiento",
+          "name": "Algoritmos de Ordenamiento",
+          "description": "Bubble sort, selection sort, insertion sort",
+          "order": 2
+        },
+        {
+          "id": "algoritmos-busqueda",
+          "name": "Algoritmos de Búsqueda",
+          "description": "Búsqueda secuencial, búsqueda binaria",
+          "order": 3
+        },
+        {
+          "id": "pilas-colas",
+          "name": "Pilas y Colas",
+          "description": "Implementación y operaciones LIFO/FIFO",
+          "order": 4
+        },
+        {
+          "id": "recursion",
+          "name": "Recursión",
+          "description": "Funciones recursivas, casos base, divide y conquista",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "frontend",
+      "name": "Desarrollo Front End",
+      "description": "Desarrollo web moderno con HTML, CSS, JavaScript y TypeScript",
+      "units": [
+        {
+          "id": "html-fundamentos",
+          "name": "Fundamentos de HTML",
+          "description": "Estructura, semántica, etiquetas básicas, formularios",
+          "order": 1
+        },
+        {
+          "id": "css-estilos",
+          "name": "CSS y Diseño",
+          "description": "Selectores, box model, flexbox, grid, responsive design",
+          "order": 2
+        },
+        {
+          "id": "javascript-basico",
+          "name": "JavaScript Básico",
+          "description": "Variables, funciones, DOM manipulation, eventos",
+          "order": 3
+        },
+        {
+          "id": "javascript-avanzado",
+          "name": "JavaScript Avanzado",
+          "description": "ES6+, async/await, fetch API, módulos",
+          "order": 4
+        },
+        {
+          "id": "typescript",
+          "name": "TypeScript",
+          "description": "Tipos, interfaces, generics, decoradores",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": "backend",
+      "name": "Desarrollo Backend",
+      "description": "Desarrollo de APIs REST con Python y FastAPI",
+      "units": [
+        {
+          "id": "python-fundamentos",
+          "name": "Fundamentos de Python",
+          "description": "Variables, funciones, estructuras de datos, POO",
+          "order": 1
+        },
+        {
+          "id": "fastapi-basico",
+          "name": "FastAPI Básico",
+          "description": "Endpoints, path operations, request/response",
+          "order": 2
+        },
+        {
+          "id": "bases-datos",
+          "name": "Bases de Datos",
+          "description": "SQLAlchemy, modelos, migraciones, queries",
+          "order": 3
+        },
+        {
+          "id": "autenticacion",
+          "name": "Autenticación y Seguridad",
+          "description": "JWT, OAuth2, password hashing, middleware",
+          "order": 4
+        },
+        {
+          "id": "deployment",
+          "name": "Deployment y Testing",
+          "description": "Docker, CI/CD, pytest, testing de APIs",
+          "order": 5
+        }
+      ]
+    }
+  ]
+}

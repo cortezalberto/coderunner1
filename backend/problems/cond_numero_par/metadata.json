@@ -1,0 +1,13 @@
+{
+  "title": "Verificar número par",
+  "subject_id": "programacion-1",
+  "unit_id": "estructuras-condicionales",
+  "difficulty": "easy",
+  "tags": [
+    "condicionales",
+    "modulo",
+    "operadores"
+  ],
+  "timeout_sec": 3.0,
+  "memory_mb": 128
+}

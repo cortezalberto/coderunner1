@@ -1,0 +1,12 @@
+{
+  "title": "Mayor de dos numeros",
+  "subject_id": "programacion-1",
+  "unit_id": "estructuras-condicionales",
+  "difficulty": "easy",
+  "tags": [
+    "basico",
+    "practica"
+  ],
+  "timeout_sec": 3.0,
+  "memory_mb": 128
+}

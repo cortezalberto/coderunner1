@@ -1,0 +1,9 @@
+{
+  "title": "Estructura básica HTML",
+  "subject_id": "frontend",
+  "unit_id": "html-fundamentos",
+  "difficulty": "easy",
+  "tags": ["html", "estructura", "basico"],
+  "timeout_sec": 5,
+  "memory_mb": 128
+}

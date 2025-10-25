@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "test_saludo_basico",
+      "points": 3,
+      "visibility": "public"
+    },
+    {
+      "name": "test_saludo_otro_nombre",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_saludo_nombre_corto",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_saludo_nombre_compuesto",
+      "points": 2,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_saludo_nombre_especial",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

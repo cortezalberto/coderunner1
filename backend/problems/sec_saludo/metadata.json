@@ -1,0 +1,9 @@
+{
+  "title": "Saludo personalizado",
+  "subject_id": "programacion-1",
+  "unit_id": "estructuras-secuenciales",
+  "difficulty": "easy",
+  "tags": ["variables", "strings", "concatenacion"],
+  "timeout_sec": 3.0,
+  "memory_mb": 128
+}

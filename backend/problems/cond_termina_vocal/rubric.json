@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_termina_vocal_minuscula",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_no_termina_vocal",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_termina_vocal_mayuscula",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_todas_vocales_minusculas",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_todas_vocales_mayusculas",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_consonantes_finales",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Response JSON con FastAPI",
+  "subject_id": "backend",
+  "unit_id": "fastapi-basico",
+  "difficulty": "easy",
+  "tags": ["fastapi", "json", "response", "api"],
+  "timeout_sec": 5,
+  "memory_mb": 128
+}

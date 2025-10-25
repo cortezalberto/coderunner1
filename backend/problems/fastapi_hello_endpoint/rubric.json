@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_imprime_diccionario",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_contiene_clave_message",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_mensaje_correcto",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_formato_json_valido",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_sin_claves_adicionales",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_valor_exacto",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

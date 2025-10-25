@@ -70,30 +70,30 @@ class SubmissionService:
         test_results = []
         for tr in submission.test_results:
             test_results.append({
-                "test_name": tr.test_name,
-                "outcome": tr.outcome,
-                "duration": tr.duration,
-                "message": tr.message,
-                "points": tr.points,
-                "max_points": tr.max_points,
-                "visibility": tr.visibility
+                "test_name": tr.test_name or "",
+                "outcome": tr.outcome or "unknown",
+                "duration": tr.duration or 0.0,
+                "message": tr.message or "",
+                "points": tr.points or 0.0,
+                "max_points": tr.max_points or 0.0,
+                "visibility": tr.visibility or "public"
             })
 
         return {
             "job_id": submission.job_id,
             "status": submission.status,
-            "ok": submission.ok,
-            "score_total": submission.score_total,
-            "score_max": submission.score_max,
-            "passed": submission.passed,
-            "failed": submission.failed,
-            "errors": submission.errors,
-            "duration_sec": submission.duration_sec,
-            "stdout": submission.stdout,
-            "stderr": submission.stderr,
-            "error_message": submission.error_message,
+            "ok": submission.ok if submission.ok is not None else False,
+            "score_total": submission.score_total or 0.0,
+            "score_max": submission.score_max or 0.0,
+            "passed": submission.passed or 0,
+            "failed": submission.failed or 0,
+            "errors": submission.errors or 0,
+            "duration_sec": submission.duration_sec or 0.0,
+            "stdout": submission.stdout or "",
+            "stderr": submission.stderr or "",
+            "error_message": submission.error_message or "",
             "test_results": test_results,
-            "created_at": submission.created_at.isoformat(),
+            "created_at": submission.created_at.isoformat() if submission.created_at else None,
             "completed_at": submission.completed_at.isoformat() if submission.completed_at else None
         }
 

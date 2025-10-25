@@ -1,0 +1,1 @@
+{"tests":[{"name":"test_velocidad_basica","points":3,"visibility":"public"},{"name":"test_velocidad_decimal","points":2,"visibility":"public"},{"name":"test_velocidad_unitaria","points":2,"visibility":"public"},{"name":"test_velocidad_grande","points":2,"visibility":"hidden"},{"name":"test_velocidad_precision","points":1,"visibility":"hidden"}],"max_points":10}

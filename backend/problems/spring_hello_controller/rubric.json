@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_mensaje_correcto",
+      "points": 3,
+      "visibility": "public"
+    },
+    {
+      "name": "test_formato_exacto",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_sin_entrada",
+      "points": 2,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_mensaje_completo",
+      "points": 2,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

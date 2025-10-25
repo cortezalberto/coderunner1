@@ -1,0 +1,55 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_opcion_mayusculas",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_opcion_minusculas",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_opcion_title",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_opcion_invalida",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_nombre_completo_mayusculas",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_nombre_completo_minusculas",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_nombre_completo_title",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_opcion_cero",
+      "points": 0.5,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_opcion_negativa",
+      "points": 0.5,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

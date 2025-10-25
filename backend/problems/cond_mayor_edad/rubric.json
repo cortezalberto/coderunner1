@@ -1,0 +1,40 @@
+{
+  "tests": [
+    {
+      "name": "test_existe_funcion",
+      "points": 1,
+      "visibility": "public"
+    },
+    {
+      "name": "test_mayor_edad_basico",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_menor_edad_basico",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_edad_limite",
+      "points": 2,
+      "visibility": "public"
+    },
+    {
+      "name": "test_mayor_edad_avanzado",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_menor_edad_nino",
+      "points": 1,
+      "visibility": "hidden"
+    },
+    {
+      "name": "test_edad_limite_superior",
+      "points": 1,
+      "visibility": "hidden"
+    }
+  ],
+  "max_points": 10
+}

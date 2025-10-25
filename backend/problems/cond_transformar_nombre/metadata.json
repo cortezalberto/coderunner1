@@ -1,0 +1,13 @@
+{
+  "title": "Transformar nombre",
+  "subject_id": "programacion-1",
+  "unit_id": "estructuras-condicionales",
+  "difficulty": "medium",
+  "tags": [
+    "condicionales",
+    "strings",
+    "metodos-string"
+  ],
+  "timeout_sec": 3.0,
+  "memory_mb": 128
+}

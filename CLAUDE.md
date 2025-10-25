@@ -2,39 +2,54 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## ✅ Current Status (Updated: 23 Oct 2025)
+## Current Status
 
-**System Status**: Fully Functional ✅
+**System**: Production-ready ✅ (Last updated: 25 Oct 2025)
+**Problem Count**: 20 problems across 3 subjects (10 Secuenciales, 9 Condicionales, 1 Funciones)
+**Test Coverage**: 86 tests created, Phase 3: 85% complete (tests infrastructure complete)
+**Frontend**: TypeScript migration completed ✅
+**Documentation**: Comprehensive with user stories and use cases
 
-The project is **production-ready** with all core features working:
-- ✅ Code execution in isolated Docker containers
-- ✅ Test validation with public/hidden tests
-- ✅ Automatic scoring with rubrics
-- ✅ Service layer architecture (Phase 1: 100%, Phase 2: 100%)
-- ✅ Pydantic v2 schema validation on all endpoints
-- ✅ Security: input validation, network isolation, resource limits
-- ✅ Structured JSON logging
+**Recent Improvements**:
+- Frontend: **Migrated to TypeScript** with full type safety, race condition fixes, localStorage persistence, AbortController cleanup
+- Backend: Metadata validation, health check with dependencies, None-safety
+- Architecture: Service layer (100%), Pydantic v2 schemas, structured logging
+- Documentation: Created HISTORIAS_USUARIO.md with 21 user stories and detailed use cases
 
-**Critical Fix Applied**: Docker-in-Docker volume mounting issue resolved (see "Critical: Docker-in-Docker Configuration" section below). Tests now execute correctly.
+See [REFACTORIZACION_APLICADA.md](REFACTORIZACION_APLICADA.md), [REFACTORIZACION_TYPESCRIPT.md](REFACTORIZACION_TYPESCRIPT.md), and [HISTORIAS_USUARIO.md](HISTORIAS_USUARIO.md) for detailed changes and use cases.
 
-**Phase 2 Completed** (23 Oct 2025):
-- ✅ Worker services created: DockerRunner, RubricScorer
-- ✅ Pydantic v2 schemas for all API requests/responses
-- ✅ All endpoints tested and working with new architecture
-- ⏳ Frontend refactoring (optional optimization) pending
+## Quick Reference
 
-**Phase 3: 85% Complete** (23 Oct 2025):
-- ✅ Test infrastructure created (83 unit tests)
-- ✅ Linting configuration (Black, flake8, isort, mypy)
-- ✅ Pre-commit hooks configured
-- ✅ TESTING.md documentation created
-- ⏳ Some tests need minor adjustments (25/53 passing in backend)
-- ⏳ Worker tests created but not yet executed
+**Most Common Commands:**
+```bash
+# Start everything (first time)
+docker build -t py-playground-runner:latest ./runner && docker compose up --build
 
-**Important Files**:
-- [ANALISIS_Y_CORRECCIONES.md](ANALISIS_Y_CORRECCIONES.md) - Complete analysis and fixes applied
-- [REFACTORING_COMPLETE.md](REFACTORING_COMPLETE.md) - Refactoring progress (Phases 1 & 2 complete, Phase 3 85%)
-- [TESTING.md](TESTING.md) - Testing guide with instructions for running tests and linters
+# Start everything (subsequent runs)
+docker compose up -d
+
+# Check service status
+docker compose ps
+
+# View logs
+docker compose logs -f backend
+docker compose logs -f worker
+
+# Stop everything
+docker compose down
+
+# Reset database
+docker compose down -v && docker compose up --build
+
+# Verify system health
+curl http://localhost:8000/api/health | python -m json.tool
+```
+
+**Access Points:**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- Health Check: http://localhost:8000/api/health
 
 ## Project Overview
 
@@ -45,87 +60,98 @@ The project is **production-ready** with all core features working:
 This is a microservices architecture with the following components:
 
 ```
-Frontend (React+Monaco) → Backend (FastAPI) → Redis (RQ Queue) → Worker → Docker Sandbox
-                              ↓
-                         PostgreSQL
+Frontend (React+TypeScript+Monaco) → Backend (FastAPI) → Redis (RQ Queue) → Worker → Docker Sandbox
+                                            ↓
+                                      PostgreSQL
 ```
 
 ### Core Services
 
 1. **backend/** - FastAPI REST API with service layer architecture
-   - **app.py** - FastAPI application, routes/endpoints
-   - **services/** - Business logic layer (ProblemService, SubmissionService)
-   - **models.py** - SQLAlchemy ORM models (Submission, TestResult)
-   - **database.py** - Database session management
-   - **config.py** - Centralized configuration with environment variables
+   - **app.py** - Routes/endpoints
+   - **services/** - Business logic (ProblemService, SubmissionService, SubjectService)
+   - **models.py** - SQLAlchemy ORM (Submission, TestResult)
+   - **config.py** - Centralized configuration
    - **validators.py** - Input validation and security checks
    - **exceptions.py** - Custom exception hierarchy
    - **logging_config.py** - Structured JSON logging
-   - Receives code submissions via `/api/submit`
-   - Enqueues jobs in Redis using RQ
-   - Stores results in PostgreSQL
-   - Provides admin endpoints for metrics
 
-2. **worker/** - RQ worker process with service layer architecture
-   - **tasks.py** - Main job orchestration (coordina servicios)
-   - **services/docker_runner.py** - Docker execution service with path translation
-   - **services/rubric_scorer.py** - Automatic grading service with scoring logic
-   - Consumes jobs from Redis queue
-   - Executes code in isolated Docker containers via DockerRunner
-   - Applies rubrics to calculate scores via RubricScorer
-   - Saves detailed results to database
+2. **worker/** - RQ worker with service layer architecture
+   - **tasks.py** - Job orchestration
+   - **services/docker_runner.py** - Docker execution with path translation
+   - **services/rubric_scorer.py** - Automatic grading
 
 3. **runner/** - Minimal Docker image for sandboxed execution
-   - Python 3.11 + pytest only
-   - Non-root user (sandbox uid 1000)
-   - Used by worker for each submission
+   - Python 3.11 + pytest, non-root user (uid 1000)
 
-4. **frontend/** - React + Vite + Monaco Editor
-   - Problem selector and code editor
-   - Real-time result polling
-   - Admin panel for instructors
+4. **frontend/** - React + TypeScript + Vite + Monaco Editor
+   - Hierarchical problem selector (Subject → Unit → Problem)
+   - Real-time result polling with AbortController
+   - Full type safety with TypeScript interfaces for all API responses
 
-5. **PostgreSQL** - Persistent storage
-   - Submissions table with job metadata
-   - TestResults table for individual test outcomes
+5. **PostgreSQL** - Submissions and TestResults tables
 
-6. **Redis** - Job queue and caching
+6. **Redis** - Job queue (RQ)
 
 ### Execution Flow
 
 ```
-1. Student submits code via frontend
-2. Backend creates Submission record in DB (status: "pending")
-3. Backend enqueues job in Redis (RQ) with job_id
-4. Backend updates Submission status to "queued"
-5. Worker picks up job from queue
-6. Worker creates temp directory with:
-   - student_code.py (submitted code)
-   - tests_public.py + tests_hidden.py (from backend/problems/)
-   - conftest.py (pytest plugin for JSON report generation)
-7. Worker runs: docker run --network none --read-only --cpus 1 --memory 256m ...
-8. Container executes pytest and generates report.json
-9. Worker parses report.json, applies rubric scoring
-10. Worker saves to DB: TestResult rows + updates Submission (status: "completed")
-11. Frontend polls /api/result/{job_id} every 1s and displays results
+1. Student submits code → Backend creates Submission (status: "pending")
+2. Backend enqueues job in Redis → status: "queued"
+3. Worker picks up job from queue
+4. Worker creates temp workspace with student_code.py, tests_public.py, tests_hidden.py, conftest.py
+5. Worker runs: docker run --network none --read-only --cpus 1 --memory 256m ...
+6. Container executes pytest → generates report.json
+7. Worker parses report, applies rubric scoring
+8. Worker saves TestResult rows + updates Submission (status: "completed")
+9. Frontend polls /api/result/{job_id} every 1s and displays results
 ```
 
 ### Database Models
 
 **Submission** (backend/models.py):
-- job_id, student_id, problem_id, code
-- status (pending/queued/running/completed/failed/timeout)
+- job_id, student_id, problem_id, code, status
 - score_total, score_max, passed, failed, errors
-- stdout, stderr, duration_sec
 - Relationship: one-to-many with TestResult
 
 **TestResult** (backend/models.py):
 - test_name, outcome, duration, message
 - points, max_points, visibility (public/hidden)
 
+## Critical Architecture Decisions
+
+### Docker-in-Docker Path Translation
+
+The worker spawns Docker containers using the host's Docker daemon. This creates a path mismatch:
+- Worker creates files in `/workspaces/sandbox-xxx` (inside worker container)
+- Docker daemon looks for paths on **host filesystem**, not worker filesystem
+
+**Solution**:
+1. `./workspaces` bind-mounted to both host and worker (see docker-compose.yml)
+2. Worker translates paths: `/workspaces/sandbox-xxx` → `${PWD}/workspaces/sandbox-xxx`
+3. Files get chmod 666, directories get chmod 777 (runner uses uid 1000, worker creates as root)
+
+Without this: "file not found" errors. See worker/tasks.py:140-141.
+
+### Dockerfile Build Context
+
+All Dockerfiles use root (`.`) as context in docker-compose.yml. COPY paths must be `backend/file`, not `./file`.
+
+```dockerfile
+# ✅ CORRECT (context is root)
+COPY backend/requirements.txt ./backend/
+RUN pip install -r backend/requirements.txt
+
+# ❌ WRONG (context is root)
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+```
+
+Wrong context → ModuleNotFoundError. See docker-compose.yml build contexts.
+
 ## Development Commands
 
-### Quick Start (Recommended)
+### Quick Start
 
 ```bash
 # Windows
@@ -136,73 +162,38 @@ chmod +x start.sh
 ./start.sh
 ```
 
-This automatically builds the runner image and starts all services.
-
-### Full Stack (Docker Compose)
+### Docker Compose
 
 ```bash
-# Build runner image first (one-time)
+# Build runner image (one-time)
 docker build -t py-playground-runner:latest ./runner
 
 # Start all services
 docker compose up --build
 
-# Stop and remove volumes (reset database)
-docker compose down -v
+# Verify services
+docker compose ps  # All should show "Up" or "Up (healthy)"
+
+# Health check
+curl http://localhost:8000/api/health
 ```
 
-Services will be available at:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-
-**Verify all services are running:**
-```bash
-docker compose ps
-# All services should show "Up" or "Up (healthy)" status
-# If any service is "Exit 1" or keeps restarting, check logs:
-docker compose logs <service_name>
-```
-
-**Quick health check:**
-```bash
-# Test backend API
-curl http://localhost:8000/api/problems
-# Or with PowerShell on Windows:
-Invoke-RestMethod -Uri http://localhost:8000/api/problems -Method Get
-```
-
-### Local Development (Individual Services)
+### Local Development
 
 **Backend:**
 ```bash
-# Linux/Mac
 cd backend
 pip install -r requirements.txt
-export DATABASE_URL=postgresql://playground:playground@localhost:5432/playground
-export REDIS_URL=redis://localhost:6379/0
+export DATABASE_URL=postgresql://playground:playground@localhost:5432/playground  # Linux/Mac
+set DATABASE_URL=postgresql://playground:playground@localhost:5432/playground    # Windows
 uvicorn backend.app:app --reload
-
-# Windows
-cd backend
-pip install -r requirements.txt
-set DATABASE_URL=postgresql://playground:playground@localhost:5432/playground
-set REDIS_URL=redis://localhost:6379/0
-python -m uvicorn backend.app:app --reload
 ```
 
 **Worker:**
 ```bash
-# Linux/Mac
 cd worker
 pip install -r requirements.txt
-export DATABASE_URL=postgresql://playground:playground@localhost:5432/playground
-rq worker --url redis://localhost:6379 submissions
-
-# Windows
-cd worker
-pip install -r requirements.txt
-set DATABASE_URL=postgresql://playground:playground@localhost:5432/playground
+export DATABASE_URL=postgresql://playground:playground@localhost:5432/playground  # Linux/Mac
 rq worker --url redis://localhost:6379 submissions
 ```
 
@@ -211,22 +202,46 @@ rq worker --url redis://localhost:6379 submissions
 cd frontend
 npm install
 npm run dev
+
+# TypeScript type checking (optional)
+npx tsc --noEmit
 ```
 
-### Viewing Logs
+### Testing and Code Quality
 
+**Run Tests:**
 ```bash
-# All services
-docker compose logs -f
+# Backend tests
+docker compose exec backend pytest backend/tests/ -v
 
-# Specific service
-docker compose logs -f backend
-docker compose logs -f worker
-docker compose logs -f frontend
+# With coverage
+docker compose exec backend pytest backend/tests/ --cov=backend --cov-report=term-missing
 
-# Database logs
-docker compose logs -f postgres
+# Specific test
+docker compose exec backend pytest backend/tests/test_problem_service.py::TestProblemService::test_list_all_problems -v
+
+# Worker tests
+docker compose exec worker pip install pytest pytest-mock
+docker compose exec worker pytest worker/tests/ -v
 ```
+
+**Run Linters:**
+```bash
+# Install dev dependencies
+pip install -r backend/requirements-dev.txt
+
+# Format and lint
+black backend/ worker/
+isort backend/ worker/
+flake8 backend/ worker/
+mypy backend/ worker/
+
+# Pre-commit hooks
+pre-commit install
+pre-commit run --all-files
+```
+
+See [TESTING.md](TESTING.md) for detailed documentation.
 
 ### Database Access
 
@@ -239,43 +254,94 @@ SELECT * FROM submissions ORDER BY created_at DESC LIMIT 10;
 SELECT * FROM test_results WHERE submission_id = 1;
 ```
 
+### Viewing Logs
+
+```bash
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f backend
+docker compose logs -f worker
+
+# Structured JSON logs
+docker compose logs backend | grep -E '^\{' | python -m json.tool
+```
+
+## Hierarchical Subject/Unit System
+
+The platform organizes problems using a **three-level hierarchy**: Subject → Unit → Problem.
+
+### Configuration
+
+Subjects and units are defined in [backend/subjects_config.json](backend/subjects_config.json). Edit this file to add new subjects/units - no code changes needed.
+
+**Current subjects:**
+- **Programación 1**: Estructuras Secuenciales, Condicionales, Repetitivas, Listas, Funciones
+- **Programación 2**: POO Básico, Herencia, Excepciones, Archivos, Estructuras de Datos
+- **Algoritmos y Complejidad**: Ordenamiento, Búsqueda, Recursión, Complejidad, Programación Dinámica
+
+### API Endpoints
+
+**Student**:
+- GET /api/problems - List all problems
+- POST /api/submit - Submit code (returns job_id)
+- GET /api/result/{job_id} - Poll for results
+
+**Hierarchy Navigation**:
+- GET /api/subjects - List all subjects
+- GET /api/subjects/{subject_id}/units - Get units for a subject
+- GET /api/subjects/{subject_id}/units/{unit_id}/problems - Get problems for a unit
+- GET /api/problems/hierarchy - Complete hierarchy with problem counts
+
+**Admin**:
+- GET /api/admin/summary - Aggregate statistics
+- GET /api/admin/submissions - Recent submissions with filters
+
+Full schemas: http://localhost:8000/docs
+
+### Frontend Navigation
+
+Three cascading dropdowns:
+1. **📚 Materia** (Subject) - User selects a subject
+2. **📖 Unidad Temática** (Unit) - Auto-populates from selected subject
+3. **🎯 Ejercicio** (Problem) - Shows problems for selected unit
+
+See [frontend/src/components/Playground.tsx](frontend/src/components/Playground.tsx)
+
 ## Problem Structure
 
-Problems live in `backend/problems/<problem_id>/` with:
+Problems live in `backend/problems/<problem_id>/` with 6 required files:
 
-- `prompt.md` - Problem statement (supports Markdown)
+- `prompt.md` - Problem statement (Markdown)
 - `starter.py` - Initial code template
 - `tests_public.py` - Tests visible to students
-- `tests_hidden.py` - Hidden tests (for grading)
-- `metadata.json` - Title, difficulty, tags, timeout_sec, memory_mb
+- `tests_hidden.py` - Hidden tests for grading
+- `metadata.json` - Title, subject_id, unit_id, difficulty, tags, timeout_sec, memory_mb
 - `rubric.json` - Points per test and visibility
 
 ### Rubric System
 
-Example `rubric.json`:
+**Critical**: Test names in rubric.json must match pytest function names exactly.
+
 ```json
 {
   "tests": [
     {"name": "test_suma_basico", "points": 3, "visibility": "public"},
-    {"name": "test_suma_negativos", "points": 2, "visibility": "public"},
-    {"name": "test_suma_negativos_avanzado", "points": 3, "visibility": "hidden"},
-    {"name": "test_suma_grande", "points": 2, "visibility": "hidden"}
+    {"name": "test_suma_hidden", "points": 2, "visibility": "hidden"}
   ],
-  "max_points": 10
+  "max_points": 5
 }
 ```
 
-**Important:** Test names in rubric.json must match the actual pytest function names.
-
-- **public** tests: Full details (outcome, message, duration) shown to students
-- **hidden** tests: Only shown as "passed/failed", no details or error messages
-- Scores calculated: points awarded only if test passes
+- **public** tests: Full details shown (outcome, message, duration)
+- **hidden** tests: Only pass/fail, no error messages
+- Points awarded only if test passes
 
 ### Test File Pattern
 
-Both `tests_public.py` and `tests_hidden.py` must:
+Both test files must use importlib to dynamically import student code:
 
-1. Import student code dynamically using importlib:
 ```python
 import importlib.util
 import os
@@ -286,153 +352,88 @@ spec = importlib.util.spec_from_file_location(
 )
 student = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(student)
-```
 
-2. Define pytest test functions that use `student.function_name()`
-3. Use descriptive test names matching rubric entries exactly
-
-**Example:**
-```python
 def test_suma_basico():
-    """Test básico de suma"""
     assert hasattr(student, "suma"), "Debe existir una función suma(a, b)"
     assert student.suma(2, 3) == 5
 ```
 
-### Legacy Support
-
-If `tests_public.py` and `tests_hidden.py` don't exist, worker falls back to `tests.py` (from old MVP structure).
+See `backend/problems/sumatoria/` for complete examples.
 
 ## Security Implementation
 
 ### Multi-Layer Security
 
-**1. Input Validation Layer** ([backend/validators.py](backend/validators.py))
+**1. Input Validation** ([backend/validators.py](backend/validators.py))
 
-Before code reaches the worker, it's validated for:
-- **Dangerous imports**: Blocks `import os`, `import subprocess`, `import sys`, `__import__`, `eval()`, `exec()`, `compile()`
-- **Code length**: Maximum 50KB by default
-- **Problem existence**: Verifies problem_id exists in filesystem
-- **Problem ID format**: Validates alphanumeric + underscores only
-
-All submissions pass through `validate_submission_request()` before being enqueued.
+Before code reaches worker:
+- Blocks dangerous imports: `os`, `subprocess`, `sys`, `__import__`, `eval()`, `exec()`, `compile()`
+- Enforces max code length (50KB default)
+- Validates problem_id format and existence
 
 **2. Docker Sandbox Isolation**
 
-The worker executes every submission in a Docker container with:
-
 ```bash
 docker run --rm \
-  --network none \              # No network access
-  --read-only \                 # Filesystem is read-only
+  --network none \              # No network
+  --read-only \                 # Read-only filesystem
   --tmpfs /tmp:rw,noexec,nosuid,size=64m \
   --tmpfs /workspace:rw,noexec,nosuid,size=128m \
-  --cpus=1.0 \                  # CPU limit
-  --memory=256m \               # Memory limit
-  --memory-swap=256m \          # No swap
-  -v $workspace:/workspace:rw \ # Mount student code
-  -w /workspace \
-  py-playground-runner:latest \
-  pytest -q --tb=short .
+  --cpus=1.0 --memory=256m --memory-swap=256m \
+  -v $workspace:/workspace:rw \
+  py-playground-runner:latest pytest -q --tb=short .
 ```
 
-**Additional safeguards:**
+Additional safeguards:
 - Timeout enforcement (default 5s, configurable per problem)
-- Non-root user in container (sandbox uid 1000)
-- No capabilities, no privileged mode
-- Worker runs on separate process from API
+- Non-root user (uid 1000)
 - Workspace cleanup after execution
 
-**Limitations:**
-- This prevents most attack vectors but is not foolproof
-- For high-stakes environments, consider additional layers:
-  - gVisor runtime
-  - Separate VM/host for worker
-  - Module import whitelist
-  - Static analysis before execution
+**Limitations**: For high-stakes environments, consider gVisor runtime, separate VM/host for worker, or static analysis.
 
-## API Endpoints
+## Service Layer Architecture
 
-### Student Endpoints
+The backend follows a **service layer pattern** to separate business logic from HTTP routes.
 
-- `GET /api/problems` - List all problems with prompts and starters
-- `POST /api/submit` - Submit code (returns job_id)
-  - Body: `{"problem_id": "string", "code": "string", "student_id": "string"?}`
-- `GET /api/result/{job_id}` - Poll for results
+### Service Classes
 
-### Admin Endpoints
+**ProblemService** ([backend/services/problem_service.py](backend/services/problem_service.py)):
+- `list_all()`, `get_problem_dir()`, `get_test_files()`, `load_rubric()`
+- `list_by_subject_and_unit()`, `group_by_subject_and_unit()`
 
-- `GET /api/admin/summary` - Aggregate statistics
-  - Returns: total submissions, completed, failed, pending, avg_score, by_problem stats
-- `GET /api/admin/submissions?limit=50&problem_id=...&student_id=...` - Recent submissions
-  - Query params: limit (default 50), offset, problem_id, student_id
+**SubjectService** ([backend/services/subject_service.py](backend/services/subject_service.py)):
+- `list_all_subjects()`, `get_subject()`, `list_units_by_subject()`
+- `get_hierarchy()`, `validate_subject_unit()`
+- Reads from subjects_config.json
 
-### Response Format
+**SubmissionService** ([backend/services/submission_service.py](backend/services/submission_service.py)):
+- `create_submission()`, `update_job_id()`, `get_by_job_id()`
+- `get_result_dict()`, `get_statistics()`, `list_submissions()`
 
-**Queued submission:**
-```json
-{
-  "job_id": "abc123",
-  "status": "queued",
-  "message": "Submission enqueued successfully"
-}
-```
+**DockerRunner** (worker/services/docker_runner.py):
+- Handles Docker execution with path translation
 
-**Completed submission:**
-```json
-{
-  "job_id": "abc123",
-  "status": "completed",
-  "ok": true,
-  "score_total": 8.0,
-  "score_max": 10.0,
-  "passed": 3,
-  "failed": 1,
-  "errors": 0,
-  "duration_sec": 0.234,
-  "test_results": [
-    {
-      "test_name": "test_suma_basico",
-      "outcome": "passed",
-      "duration": 0.001,
-      "points": 3,
-      "max_points": 3,
-      "visibility": "public",
-      "message": ""
-    }
-  ],
-  "stdout": "...",
-  "stderr": "",
-  "created_at": "2025-10-22T19:00:00",
-  "completed_at": "2025-10-22T19:00:05"
-}
-```
+**RubricScorer** (worker/services/rubric_scorer.py):
+- Applies scoring logic to test results
 
-## Adding New Features
+### Adding New Features
 
-### Following the Service Layer Pattern
+Follow this pattern:
 
-When adding new features to the backend, follow this pattern:
-
-1. **Create a service class** in `backend/services/` if it involves business logic:
+1. **Create service class** in `backend/services/`:
 ```python
-# backend/services/my_service.py
 from ..logging_config import get_logger
-from ..exceptions import ValidationError
-
 logger = get_logger(__name__)
 
 class MyService:
     def do_something(self, param):
         logger.info(f"Doing something with {param}")
-        # Business logic here
         return result
 
-# Singleton instance
-my_service = MyService()
+my_service = MyService()  # Singleton
 ```
 
-2. **Use the service in routes** ([backend/app.py](backend/app.py)):
+2. **Use in routes** (backend/app.py):
 ```python
 from .services.my_service import my_service
 
@@ -441,407 +442,178 @@ def my_endpoint(db: Session = Depends(get_db)):
     return my_service.do_something("value")
 ```
 
-3. **Add validation** if accepting user input ([backend/validators.py](backend/validators.py)):
-```python
-def validate_my_input(value: str):
-    if not value:
-        raise ValidationError("Value cannot be empty")
-```
-
-4. **Add custom exceptions** if needed ([backend/exceptions.py](backend/exceptions.py)):
-```python
-class MyCustomError(Exception):
-    pass
-```
-
-5. **Add configuration** if using environment variables ([backend/config.py](backend/config.py)):
-```python
-class Settings:
-    MY_NEW_SETTING: str = os.getenv("MY_NEW_SETTING", "default_value")
-```
-
-6. **Use structured logging** throughout:
-```python
-logger.info("Action completed", extra={"key": "value"})
-logger.error("Error occurred", exc_info=True)
-```
+3. **Add validation** (backend/validators.py)
+4. **Add exceptions** (backend/exceptions.py)
+5. **Add configuration** (backend/config.py)
+6. **Use structured logging**: `logger.info("Message", extra={"key": "value"})`
 
 ## Adding New Problems
 
-1. Create directory:
+1. Choose subject/unit from [backend/subjects_config.json](backend/subjects_config.json)
+2. Create directory: `mkdir backend/problems/new_problem`
+3. Create 6 files: `prompt.md`, `starter.py`, `tests_public.py`, `tests_hidden.py`, `metadata.json`, `rubric.json`
+4. Fill metadata.json with subject_id and unit_id
+5. Test locally:
+
 ```bash
-# Linux/Mac
-mkdir -p backend/problems/new_problem
-
-# Windows
-mkdir backend\problems\new_problem
-```
-
-2. Create all required files:
-```bash
-# Linux/Mac
-cd backend/problems/new_problem
-touch prompt.md starter.py tests_public.py tests_hidden.py metadata.json rubric.json
-
-# Windows
-cd backend\problems\new_problem
-type nul > prompt.md
-type nul > starter.py
-type nul > tests_public.py
-type nul > tests_hidden.py
-type nul > metadata.json
-type nul > rubric.json
-```
-
-3. Fill in each file (see `backend/problems/sumatoria/` as reference)
-
-4. Test locally:
-```bash
-# Linux/Mac
+# Submit test
 curl -X POST http://localhost:8000/api/submit \
   -H "Content-Type: application/json" \
   -d '{"problem_id": "new_problem", "code": "def my_func():\n    pass", "student_id": "test"}'
 
-# Windows (CMD)
-curl -X POST http://localhost:8000/api/submit ^
-  -H "Content-Type: application/json" ^
-  -d "{\"problem_id\":\"new_problem\",\"code\":\"def my_func():\n    pass\",\"student_id\":\"test\"}"
-```
-
-5. Poll for results:
-```bash
+# Check results
 curl http://localhost:8000/api/result/JOB_ID
+
+# Verify hierarchy
+curl http://localhost:8000/api/problems/hierarchy | python -m json.tool
 ```
-
-## Frontend Architecture
-
-- **App.jsx** - Main component with tab navigation (Ejercicios, Panel Docente)
-- **Playground.jsx** - Student interface (problem selector, Monaco editor, results display)
-- **AdminPanel.jsx** - Instructor dashboard (stats, recent submissions table)
-- Uses Monaco Editor for syntax highlighting and autocomplete
-- Polls `/api/result/{job_id}` every 1s until status is completed/failed/timeout
-- Displays public test results in detail, hidden tests as locked items
-
-## Code Architecture Details
-
-### Backend Service Layer Pattern
-
-The backend follows a **service layer architecture** to separate business logic from HTTP routes:
-
-**Service Classes:**
-- **ProblemService** ([backend/services/problem_service.py](backend/services/problem_service.py))
-  - `list_all()` - Returns all problems with metadata, prompts, and starters
-  - `get_problem_dir(problem_id)` - Gets filesystem path for a problem
-  - `get_test_files(problem_id)` - Locates tests_public.py and tests_hidden.py
-  - `load_rubric(problem_id)` - Loads and parses rubric.json
-  - Used by `/api/problems` endpoint
-
-- **SubmissionService** ([backend/services/submission_service.py](backend/services/submission_service.py))
-  - `create_submission()` - Creates new submission record
-  - `update_job_id()` - Updates submission with RQ job_id
-  - `get_by_job_id()` - Retrieves submission by job_id
-  - `get_result_dict()` - Formats submission as API response with test results
-  - `get_statistics()` - Aggregates metrics for admin dashboard
-  - `list_submissions()` - Paginated list with filters
-  - Used by `/api/submit`, `/api/result/{job_id}`, `/api/admin/*` endpoints
-
-**Configuration & Validation:**
-- **Settings class** ([backend/config.py](backend/config.py))
-  - Centralized configuration loaded from environment variables
-  - Database URLs, Redis connection, CORS origins, Docker settings, resource limits
-  - Singleton instance: `settings`
-
-- **Input Validators** ([backend/validators.py](backend/validators.py))
-  - `validate_code_safety()` - Detects dangerous imports (os, subprocess, eval, exec, etc.)
-  - `validate_code_length()` - Enforces max code size
-  - `validate_problem_exists()` - Checks problem directory exists
-  - `validate_submission_request()` - Main validation for /api/submit
-
-- **Custom Exceptions** ([backend/exceptions.py](backend/exceptions.py))
-  - `ProblemNotFoundError`, `TestExecutionError`, `DockerExecutionError`
-  - `RubricError`, `ValidationError`
-
-**Logging:**
-- **Structured JSON logging** ([backend/logging_config.py](backend/logging_config.py))
-  - All logs output as JSON with timestamp, level, logger, message, module, function, line
-  - Supports extra context fields: job_id, submission_id, problem_id
-  - Use `get_logger(__name__)` in all modules
-
-### Key Configuration Files
-
-- `docker-compose.yml` - Orchestrates all services, defines health checks
-- `.env.example` - Environment variable template (copy to .env for local dev)
-- `backend/config.py` - Centralized settings with environment variable support
-- `backend/database.py` - SQLAlchemy setup with session management
-- `backend/models.py` - Database schema definitions (Submission, TestResult)
-- `worker/tasks.py` - Main job processing logic with Docker execution
-
-## Important: Dockerfile Context Configuration
-
-All Dockerfiles use the **root directory (`.`)** as build context in docker-compose.yml. This is critical for proper builds:
-
-**Backend Dockerfile** (`backend/Dockerfile`):
-```dockerfile
-# Context is root (.), so paths must be relative to root
-COPY backend/requirements.txt ./backend/
-RUN pip install --no-cache-dir -r backend/requirements.txt
-COPY backend ./backend
-```
-
-**Worker Dockerfile** (`worker/Dockerfile`):
-```dockerfile
-# Context is root (.), so paths must be relative to root
-COPY worker/requirements.txt ./worker/
-RUN pip install --no-cache-dir -r worker/requirements.txt
-COPY backend ./backend  # Worker needs backend code for models
-COPY worker ./worker
-```
-
-**Why this matters:** If you change the context or COPY paths incorrectly, pip won't find requirements.txt and services will fail with "ModuleNotFoundError". Always use paths relative to the root directory.
-
-## Port Configuration
-
-**Important for Windows users:** The default PostgreSQL (5432) and Redis (6379) ports may have permission issues on Windows. The project is configured with alternative ports:
-
-- **PostgreSQL**: External port `15432` → Internal port `5432`
-- **Redis**: External port `16379` → Internal port `6379`
-- **Backend**: Port `8000` (no change)
-- **Frontend**: Port `5173` (no change)
-
-To change ports, edit `docker-compose.yml`:
-```yaml
-postgres:
-  ports:
-    - "15432:5432"  # external:internal
-```
-
-**Note:** Internal container-to-container communication always uses the internal port (e.g., `postgres:5432` in DATABASE_URL).
 
 ## Common Tasks
 
-**Build runner image manually:**
+**Restart service after code changes:**
 ```bash
-docker build -t py-playground-runner:latest ./runner
+docker compose restart backend
+# Or rebuild if dependencies changed:
+docker compose up -d --build backend
+```
+
+**Reset database:**
+```bash
+docker compose down -v && docker compose up --build
 ```
 
 **Change resource limits globally:**
-Edit environment variables in `docker-compose.yml` or modify `DEFAULT_TIMEOUT`, `DEFAULT_MEMORY_MB`, `DEFAULT_CPUS` in `worker/tasks.py`
+Edit `DEFAULT_TIMEOUT`, `DEFAULT_MEMORY_MB`, `DEFAULT_CPUS` in worker/tasks.py
 
 **Change resource limits per problem:**
-Edit `metadata.json`:
-```json
-{
-  "timeout_sec": 3.0,
-  "memory_mb": 128
-}
-```
+Edit problem's metadata.json (timeout_sec, memory_mb)
 
-**Reset database completely:**
+**Test problem manually:**
 ```bash
-docker compose down -v
-docker compose up --build
-```
-
-**Restart a single service after code changes:**
-```bash
-# Restart backend after modifying backend code
-docker compose restart backend
-
-# Or rebuild if you changed dependencies
-docker compose up -d --build backend
-
-# View logs to verify changes
-docker compose logs -f backend
-```
-
-**Test API endpoints manually:**
-```bash
-# Test problem listing
-curl http://localhost:8000/api/problems
-
-# Test submission
-curl -X POST http://localhost:8000/api/submit \
-  -H "Content-Type: application/json" \
-  -d '{"problem_id":"sumatoria","code":"def suma(a,b): return a+b","student_id":"test"}'
-
-# Test admin statistics
-curl http://localhost:8000/api/admin/summary
-
-# View backend logs for structured JSON output
-docker compose logs backend | grep -E '^\{' | python -m json.tool
-```
-
-**Test a problem manually (inside runner container):**
-```bash
-# Linux/Mac
 docker run -it --rm -v $(pwd)/backend/problems/sumatoria:/workspace -w /workspace py-playground-runner:latest bash
 # Inside container:
 echo "def suma(a,b): return a+b" > student_code.py
 pytest -v tests_public.py
-
-# Windows (PowerShell)
-docker run -it --rm -v ${PWD}/backend/problems/sumatoria:/workspace -w /workspace py-playground-runner:latest bash
-# Inside container:
-echo "def suma(a,b): return a+b" > student_code.py
-pytest -v tests_public.py
-
-# Windows (CMD) - use absolute path
-docker run -it --rm -v C:\path\to\python-playground-mvp\backend\problems\sumatoria:/workspace -w /workspace py-playground-runner:latest bash
 ```
 
-## Critical: Docker-in-Docker Configuration
+## Port Configuration
 
-The worker runs Docker commands to execute student code in isolated containers. This creates a **Docker-in-Docker** scenario that requires special configuration:
+**Windows users**: Default ports may have permission issues. Configured with alternatives:
+- PostgreSQL: External `15432` → Internal `5432`
+- Redis: External `16379` → Internal `6379`
+- Backend: `8000`
+- Frontend: `5173`
 
-### The Problem
-
-The worker container uses the host's Docker daemon (via mounted `/var/run/docker.sock`) to spawn runner containers. When the worker creates temporary workspaces in `/tmp/sandbox-xxx`, these paths exist **inside the worker container**, not on the host. When Docker tries to mount these paths into the runner container, it fails because Docker daemon looks for paths on the **host filesystem**.
-
-### The Solution
-
-1. **Shared Workspace Directory** ([docker-compose.yml](docker-compose.yml)):
-   - Worker mounts `./workspaces:/workspaces` as a bind mount
-   - This directory exists on both the host and inside the worker
-   - Environment variable `HOST_WORKSPACE_DIR=${PWD}/workspaces` tells worker the host path
-
-2. **Path Translation** ([worker/tasks.py](worker/tasks.py:140-141)):
-   ```python
-   # Convert /workspaces/sandbox-xxx (worker) to HOST_WORKSPACE_DIR/sandbox-xxx (host)
-   workspace_rel = workspace.replace(WORKSPACE_DIR, "").lstrip("/")
-   host_workspace = f"{HOST_WORKSPACE_DIR}/{workspace_rel}"
-   ```
-
-3. **File Permissions** ([worker/tasks.py](worker/tasks.py:80,85,96,100-105,138)):
-   - Worker creates files as root, but runner uses uid 1000 (sandbox user)
-   - All workspace files get `chmod 666` and directory gets `chmod 777`
-   - Required for runner to read tests and write report.json
-
-### Why This Matters
-
-Without this setup, you'll see errors like:
-- `ERROR: file or directory not found: tests_public.py`
-- `docker: Error response from daemon: Duplicate mount point`
-- `PermissionError: [Errno 13] Permission denied`
-
-The `workspaces/` directory must exist at the project root. It's created automatically but can be manually created: `mkdir workspaces`
+Container-to-container communication uses internal ports (e.g., `postgres:5432` in DATABASE_URL).
 
 ## Troubleshooting
 
-**First-time startup is slow:**
-- First run takes 5-10 minutes to download and build all images (postgres, redis, runner, backend, worker, frontend)
-- Monitor progress with: `docker compose logs -f`
-- Be patient, subsequent startups are much faster
+**First-time startup is slow**: 5-10 minutes to download/build images. Monitor: `docker compose logs -f`
 
-**Port 5173 or 8000 already in use:**
+**Port already in use**:
 ```bash
-# Windows
-netstat -ano | findstr :8000
-taskkill /PID <PID> /F
-
-# Linux/Mac
-lsof -i :8000
-kill -9 <PID>
+# Windows: netstat -ano | findstr :8000 && taskkill /PID <PID> /F
+# Linux: lsof -i :8000 && kill -9 <PID>
 ```
 
-**Worker can't access Docker daemon:**
-- Ensure `/var/run/docker.sock` is mounted in worker service (check docker-compose.yml)
-- Check Docker daemon is running: `docker ps`
-- Verify worker has permission to access socket
-- **Windows:** Ensure Docker Desktop is using WSL 2 and user has permissions in Docker Desktop settings
-- **Linux:** Add user to docker group: `sudo usermod -aG docker $USER && newgrp docker`
+**Worker can't access Docker daemon**:
+- Check `/var/run/docker.sock` mounted in docker-compose.yml
+- Windows: Verify Docker Desktop uses WSL 2
+- Linux: Add user to docker group: `sudo usermod -aG docker $USER && newgrp docker`
 
-**Runner image not found:**
+**Runner image not found**: `docker build -t py-playground-runner:latest ./runner`
+
+**ModuleNotFoundError**: Dockerfile COPY paths incorrect. Use `backend/requirements.txt` not `requirements.txt`. Rebuild: `docker compose build --no-cache backend`
+
+**Tests timing out**: Increase timeout_sec in metadata.json or DEFAULT_TIMEOUT in worker/tasks.py
+
+**Database connection errors**: Wait for healthcheck: `docker compose ps`
+
+**RQ worker not processing**: Check Redis: `docker compose exec redis redis-cli ping`
+
+## Refactoring Status
+
+See [REFACTORING_COMPLETE.md](REFACTORING_COMPLETE.md) for detailed progress.
+
+**Completed**:
+- ✅ Phase 1 (100%): Core infrastructure (config, logging, validation, exceptions)
+- ✅ Phase 2 (100%): Service layer architecture, Pydantic v2 schemas
+
+**In Progress**:
+- ⏳ Phase 3 (85%): Testing (83 tests, 25/53 passing), linting, pre-commit hooks
+
+**When continuing refactoring**:
+1. Read REFACTORING_COMPLETE.md first
+2. Follow service layer pattern
+3. Use structured logging: `get_logger(__name__)`
+4. Add validation for inputs
+5. Test after changes
+
+## Frontend Architecture
+
+**TypeScript Migration** ✅ (Completed: 25 Oct 2025)
+- Migrated from JavaScript to TypeScript for improved type safety
+- Centralized API types in `src/types/api.ts`
+- All components fully typed with interfaces
+
+**Components**:
+- **App.tsx** - Tab navigation (Ejercicios, Panel Docente)
+- **Playground.tsx** - Student interface with cascading dropdowns, Monaco editor, result polling with AbortController
+- **AdminPanel.tsx** - Instructor dashboard
+- **types/api.ts** - TypeScript interfaces for all API requests/responses
+
+**Features**:
+- Monaco Editor for Python syntax highlighting
+- Code persisted to localStorage
+- Full TypeScript type checking with strict mode
+- Type-safe API calls with Axios
+
+**Tech Stack**:
+- React 18 with TypeScript
+- Vite 6 for build tooling
+- Monaco Editor for code editing
+- Axios for HTTP requests
+- TypeScript strict mode enabled
+
+**Development Workflow**:
 ```bash
-docker build -t py-playground-runner:latest ./runner
-# Or use docker compose profile:
-docker compose --profile build up --build
+# Run dev server (hot reload enabled)
+npm run dev
+
+# Type check without compiling
+npx tsc --noEmit
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-**Frontend can't reach backend:**
-- Check CORS settings in `backend/app.py` (allow_origins)
-- Check proxy configuration in `frontend/vite.config.js`
-- Verify backend service is running: `docker compose ps`
-- Ensure backend is healthy: `curl http://localhost:8000/health` (if health endpoint exists)
+**Adding New Components**:
+1. Create `.tsx` files (not `.jsx`)
+2. Import types from `src/types/api.ts`
+3. Define component props interface:
+   ```typescript
+   interface MyComponentProps {
+     title: string
+     onSubmit: (data: FormData) => void
+   }
 
-**Tests timing out:**
-- Increase timeout in problem's `metadata.json` (timeout_sec)
-- Or modify `DEFAULT_TIMEOUT` in `worker/tasks.py`
-- Check container logs: `docker compose logs -f worker`
+   function MyComponent({ title, onSubmit }: MyComponentProps) {
+     const [value, setValue] = useState<string>('')
+     // ...
+   }
+   ```
 
-**Database connection errors:**
-- Wait for postgres healthcheck: `docker compose ps`
-- Check DATABASE_URL in environment
-- Access DB directly: `docker compose exec postgres psql -U playground`
-- If corruption suspected: `docker compose down -v && docker compose up postgres -d`
-
-**RQ worker not processing jobs:**
-- Check Redis connection: `docker compose exec redis redis-cli ping`
-- View worker logs: `docker compose logs -f worker`
-- Check queue status using RQ dashboard or redis-cli
-- Verify job was enqueued: `docker compose exec redis redis-cli LLEN rq:queue:submissions`
-
-**Docker Desktop not starting (Windows/Mac):**
-- Restart Docker Desktop application
-- Check system requirements (WSL 2 for Windows, sufficient RAM)
-- Verify virtualization is enabled in BIOS
-
-**ModuleNotFoundError (sqlalchemy, rq, etc.):**
-This indicates Dockerfile COPY paths are incorrect. The build context is the root directory (`.`), not the service directory:
-```dockerfile
-# ❌ WRONG (if context is root)
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
-
-# ✅ CORRECT (if context is root)
-COPY backend/requirements.txt ./backend/
-RUN pip install -r backend/requirements.txt
-```
-Solution: Rebuild with `docker compose build --no-cache backend` (or worker)
-
-**Worker command "rq: not found":**
-The `rq` CLI command may not be in PATH after pip install. Use the Python module syntax:
-```yaml
-# In docker-compose.yml
-command: python -m rq.cli worker --url redis://redis:6379/0 submissions
-```
-
-## Current Refactoring Status
-
-The codebase is currently undergoing a phased refactoring to improve maintainability and code quality. See [REFACTORING_COMPLETE.md](REFACTORING_COMPLETE.md) for detailed progress.
-
-**Completed:**
-- ✅ Phase 1 (100%): Core infrastructure
-  - Centralized configuration ([backend/config.py](backend/config.py))
-  - Structured JSON logging ([backend/logging_config.py](backend/logging_config.py))
-  - Input validation with security checks ([backend/validators.py](backend/validators.py))
-  - Custom exception hierarchy ([backend/exceptions.py](backend/exceptions.py))
-
-- ✅ Phase 2 (35%): Service layer architecture
-  - ProblemService for problem management
-  - SubmissionService for submission CRUD and statistics
-  - Both services fully integrated and tested
-
-**In Progress:**
-- ⏳ Phase 2 remaining tasks:
-  - DockerRunner service (worker)
-  - RubricScorer service (worker)
-  - Frontend React hooks refactoring
-  - Pydantic schemas for request/response validation
-
-**When continuing refactoring:**
-1. Always read [REFACTORING_COMPLETE.md](REFACTORING_COMPLETE.md) first for current status
-2. Follow the established service layer pattern (see "Adding New Features" section)
-3. Use structured logging with `get_logger(__name__)`
-4. Add validation for all user inputs
-5. Test endpoints after making changes
+**Adding New API Types**:
+Edit `frontend/src/types/api.ts` and add/export new interfaces. Types are automatically available throughout the app.
 
 ## Extension Points
 
-The architecture supports:
-- Multiple workers for horizontal scaling (add more worker services in docker-compose.yml)
-- Different runner images per language (modify RUNNER_IMAGE env var)
-- Custom test frameworks beyond pytest (update conftest.py pattern)
-- Authentication middleware in FastAPI (add to backend/app.py)
-- Webhook notifications on completion (add to worker/tasks.py after DB commit)
-- Rate limiting per student (add Redis-based counter in backend)
-- Submission history and analytics (query PostgreSQL)
+- Multiple workers for scaling (add worker services in docker-compose.yml)
+- Different languages (change RUNNER_IMAGE env var)
+- Custom test frameworks (update conftest.py)
+- Authentication (add middleware to backend/app.py)
+- Webhooks (add to worker/tasks.py after commit)
+- Rate limiting (Redis counter in backend)

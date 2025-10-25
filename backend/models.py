@@ -42,7 +42,7 @@ class TestResult(Base):
     __tablename__ = "test_results"
 
     id = Column(Integer, primary_key=True, index=True)
-    submission_id = Column(Integer, ForeignKey("submissions.id"), nullable=False)
+    submission_id = Column(Integer, ForeignKey("submissions.id"), nullable=False, index=True)
 
     test_name = Column(String(255), nullable=False)
     outcome = Column(String(50), nullable=False)  # passed, failed, error, skipped

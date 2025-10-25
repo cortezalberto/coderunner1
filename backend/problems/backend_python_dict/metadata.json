@@ -1,0 +1,9 @@
+{
+  "title": "Diccionario Python para API",
+  "subject_id": "backend",
+  "unit_id": "python-fundamentos",
+  "difficulty": "easy",
+  "tags": ["python", "diccionarios", "json", "backend"],
+  "timeout_sec": 5,
+  "memory_mb": 128
+}

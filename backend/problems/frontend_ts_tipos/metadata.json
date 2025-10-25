@@ -1,0 +1,9 @@
+{
+  "title": "Tipos en TypeScript",
+  "subject_id": "frontend",
+  "unit_id": "typescript",
+  "difficulty": "easy",
+  "tags": ["typescript", "tipos", "type-safety"],
+  "timeout_sec": 5,
+  "memory_mb": 128
+}

@@ -1,0 +1,13 @@
+{
+  "title": "String termina en vocal",
+  "subject_id": "programacion-1",
+  "unit_id": "estructuras-condicionales",
+  "difficulty": "medium",
+  "tags": [
+    "condicionales",
+    "strings",
+    "indexacion"
+  ],
+  "timeout_sec": 3.0,
+  "memory_mb": 128
+}
