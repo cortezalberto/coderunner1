@@ -46,6 +46,80 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
   // Derived state
   const selectedProblem = problems[selectedProblemId]
 
+  // Anti-cheating: Detect tab/window changes
+  useEffect(() => {
+    let warningCount = 0
+    const MAX_WARNINGS = 2
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        warningCount++
+
+        if (warningCount >= MAX_WARNINGS) {
+          // Close the window/tab after max warnings
+          alert('🚫 NO TE DEJO VER OTRA PÁGINA, SOY UN VIEJO GARCA! 🚫\n\nSe detectó que saliste de la página múltiples veces. La sesión se cerrará por intento de copia.')
+
+          // Try to close the window
+          window.close()
+
+          // If window.close() doesn't work (some browsers block it), redirect to a locked page
+          setTimeout(() => {
+            window.location.href = 'about:blank'
+          }, 100)
+        } else {
+          // First warning
+          alert(`⚠️ ADVERTENCIA ${warningCount}/${MAX_WARNINGS} ⚠️\n\n¡No cambies de pestaña!\n\nSe detectó que saliste del playground. Esto se considera un intento de copia.\n\nSi sales ${MAX_WARNINGS - warningCount} vez(ces) más, la sesión se cerrará automáticamente.`)
+        }
+      }
+    }
+
+    const handleBlur = () => {
+      // Additional check for window blur (alt-tab, minimize)
+      if (!document.hidden) {
+        console.warn('Window lost focus - possible tab switching')
+      }
+    }
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Prevent easy closing of the tab
+      e.preventDefault()
+      e.returnValue = '¡Alto ahí! ¿Intentas salir? Esto se considera sospechoso.'
+      return '¡Alto ahí! ¿Intentas salir? Esto se considera sospechoso.'
+    }
+
+    // Disable right-click context menu to prevent "Open in new tab"
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault()
+      alert('🚫 Click derecho deshabilitado durante la sesión de evaluación.')
+      return false
+    }
+
+    // Detect keyboard shortcuts for new tabs
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Block Ctrl+T (new tab), Ctrl+N (new window), Ctrl+Shift+N (incognito)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 't' || e.key === 'n' || e.key === 'w')) {
+        e.preventDefault()
+        alert('🚫 Atajos de teclado para abrir pestañas están bloqueados.')
+      }
+    }
+
+    // Add event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('blur', handleBlur)
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('contextmenu', handleContextMenu)
+    document.addEventListener('keydown', handleKeyDown)
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('blur', handleBlur)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('contextmenu', handleContextMenu)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   // Load subjects on mount
   useEffect(() => {
     setSubjectsLoading(true)
@@ -301,6 +375,26 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
 
   return (
     <>
+      {/* Anti-cheating warning banner */}
+      <div style={{
+        backgroundColor: '#ff4444',
+        color: 'white',
+        padding: '12px 20px',
+        marginBottom: '20px',
+        borderRadius: '8px',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        border: '2px solid #cc0000',
+        boxShadow: '0 2px 8px rgba(255,68,68,0.3)'
+      }}>
+        🚨 <strong>ADVERTENCIA DE INTEGRIDAD ACADÉMICA</strong> 🚨
+        <div style={{ fontSize: '13px', marginTop: '8px', fontWeight: 'normal' }}>
+          Esta sesión está siendo monitoreada. Si cambias de pestaña o minimizas la ventana, recibirás advertencias.
+          Después de 2 advertencias, la sesión se cerrará automáticamente. ¡No intentes copiar!
+        </div>
+      </div>
+
       <div className="problem-selector">
         <div className="selector-group">
           <label htmlFor="subject-select">📚 Materia:</label>

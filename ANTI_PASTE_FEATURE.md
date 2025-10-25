@@ -1,8 +1,14 @@
-# 🚫 Anti-Paste Feature - Prevención de Copia de Código
+# 🚫 Anti-Cheating System - Sistema Anti-Trampa Integral
 
 ## Descripción
 
-Esta funcionalidad previene que los estudiantes peguen código generado por IA o copiado de otras fuentes en el editor Monaco, fomentando el aprendizaje activo y la práctica de escritura de código.
+Sistema comprehensivo de prevención de trampas que incluye:
+1. **Anti-Paste**: Previene que los estudiantes peguen código generado por IA
+2. **Tab Monitoring**: Detecta cambios de pestaña y minimización de ventana
+3. **Context Menu Blocking**: Deshabilita click derecho
+4. **Keyboard Shortcuts Blocking**: Bloquea atajos para abrir nuevas pestañas
+
+Fomenta el aprendizaje activo y mantiene la integridad académica durante las evaluaciones.
 
 ## Implementación
 
@@ -38,7 +44,115 @@ if (domNode) {
 ```
 Previene paste a nivel del DOM, incluyendo click derecho → pegar.
 
-### Advertencia Visual
+---
+
+## Tab Monitoring - Detección de Cambio de Pestaña
+
+### Sistema de Advertencias
+
+Detecta cuando el estudiante sale de la página y aplica un sistema de advertencias progresivas:
+
+#### 1. Detección de Visibilidad (visibilitychange)
+```typescript
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    warningCount++
+
+    if (warningCount >= MAX_WARNINGS) {
+      alert('🚫 NO TE DEJO VER OTRA PÁGINA, SOY UN VIEJO GARCA! 🚫')
+      window.close() // Intenta cerrar la ventana
+      setTimeout(() => window.location.href = 'about:blank', 100)
+    } else {
+      alert(`⚠️ ADVERTENCIA ${warningCount}/${MAX_WARNINGS}...`)
+    }
+  }
+}
+```
+
+**Qué detecta**:
+- Cambio a otra pestaña del navegador
+- Minimización de la ventana
+- Alt+Tab a otra aplicación
+- Presionar el botón de minimizar
+
+#### 2. Prevención de Cierre Fácil (beforeunload)
+```typescript
+const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  e.preventDefault()
+  e.returnValue = '¡Alto ahí! ¿Intentas salir?'
+}
+```
+Muestra confirmación al intentar cerrar la pestaña.
+
+#### 3. Bloqueo de Click Derecho (contextmenu)
+```typescript
+const handleContextMenu = (e: MouseEvent) => {
+  e.preventDefault()
+  alert('🚫 Click derecho deshabilitado durante la sesión de evaluación.')
+}
+```
+Previene abrir menú contextual para "Abrir en nueva pestaña".
+
+#### 4. Bloqueo de Atajos de Teclado (keydown)
+```typescript
+const handleKeyDown = (e: KeyboardEvent) => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === 't' || e.key === 'n' || e.key === 'w')) {
+    e.preventDefault()
+    alert('🚫 Atajos de teclado para abrir pestañas están bloqueados.')
+  }
+}
+```
+
+**Atajos bloqueados**:
+- Ctrl+T / Cmd+T (nueva pestaña)
+- Ctrl+N / Cmd+N (nueva ventana)
+- Ctrl+W / Cmd+W (cerrar pestaña)
+
+### Sistema de Advertencias Progresivas
+
+**Primera vez** que sale de la página:
+```
+⚠️ ADVERTENCIA 1/2 ⚠️
+
+¡No cambies de pestaña!
+
+Se detectó que saliste del playground.
+Esto se considera un intento de copia.
+
+Si sales 1 vez más, la sesión se cerrará automáticamente.
+```
+
+**Segunda vez** que sale de la página:
+```
+🚫 NO TE DEJO VER OTRA PÁGINA, SOY UN VIEJO GARCA! 🚫
+
+Se detectó que saliste de la página múltiples veces.
+La sesión se cerrará por intento de copia.
+```
+
+Luego cierra la ventana o redirige a `about:blank`.
+
+### Advertencia Visual Permanente
+
+Banner rojo en la parte superior de la página:
+
+```
+🚨 ADVERTENCIA DE INTEGRIDAD ACADÉMICA 🚨
+
+Esta sesión está siendo monitoreada. Si cambias de pestaña o minimizas
+la ventana, recibirás advertencias. Después de 2 advertencias, la sesión
+se cerrará automáticamente. ¡No intentes copiar!
+```
+
+Estilo visual:
+- Fondo rojo (#ff4444)
+- Texto blanco
+- Borde rojo oscuro (#cc0000)
+- Sombra para destacar
+
+---
+
+### Advertencia Visual de Anti-Paste
 
 Se muestra un mensaje informativo arriba del editor:
 
@@ -51,20 +165,33 @@ Estilo visual:
 - Texto marrón (#856404)
 - Borde amarillo (#ffeaa7)
 
-## Comportamiento
+## Comportamiento del Sistema
 
-### Bloqueado:
+### Bloqueado ❌:
+
+**Anti-Paste**:
 - ✅ Ctrl + V / Cmd + V
-- ✅ Click derecho → Pegar
+- ✅ Click derecho → Pegar (en editor)
 - ✅ Menú Edit → Paste
 - ✅ Paste programático
 
-### Permitido:
-- ✅ Tipeo manual
+**Tab Monitoring**:
+- ✅ Cambio de pestaña (detectado y advertido)
+- ✅ Minimización de ventana (detectado y advertido)
+- ✅ Alt+Tab (detectado y advertido)
+- ✅ Click derecho en toda la página
+- ✅ Ctrl+T / Cmd+T (nueva pestaña)
+- ✅ Ctrl+N / Cmd+N (nueva ventana)
+- ✅ Ctrl+W / Cmd+W (cerrar pestaña)
+
+### Permitido ✅:
+- ✅ Tipeo manual en el editor
 - ✅ Autocompletado de Monaco
 - ✅ Snippets del editor
 - ✅ Copy (copiar código propio)
 - ✅ Cut (cortar código propio)
+- ✅ Navegar dentro de la misma página
+- ✅ Scroll, zoom, redimensionar ventana
 
 ## Experiencia del Usuario
 
