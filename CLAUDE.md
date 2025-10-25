@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Test Coverage**: 86 tests created, Phase 3: 85% complete (tests infrastructure complete)
 **Frontend**: TypeScript migration completed ✅ with dynamic logo system
 **Security**: Anti-cheating system active (anti-paste + tab monitoring) ✅
+**Hint System**: Progressive 4-level hints on all 31 problems (100% coverage) ✅
 **Documentation**: Comprehensive with user stories and use cases
 **Code Quality**: Health Score 8.2/10 (improved from 7.5) ✅
 
@@ -26,6 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Frontend: **Migrated to TypeScript** with full type safety, race condition fixes, localStorage persistence, AbortController cleanup
 - Frontend: **Dynamic Logo System** - Logos change based on selected subject (supports single and multi-logo displays)
 - Frontend: **Anti-Cheating System** - Comprehensive academic integrity with anti-paste and tab monitoring (5 event listeners, progressive warnings)
+- Frontend: **Progressive Hint System** - 4-level hints on all 31 problems (124 total hints), progressive disclosure with visual feedback
 - Backend: Metadata validation, health check with dependencies, None-safety
 - Backend: **8 subjects** configured with hierarchical unit system
 - Architecture: Service layer (100%), Pydantic v2 schemas, structured logging
@@ -450,6 +452,133 @@ def test_ejemplo():
 - Students learn standard Python entry point convention
 
 See `backend/problems/cond_aprobado/` for complete examples.
+
+## Progressive Hint System
+
+**IMPORTANT**: All 31 problems have a 4-level progressive hint system (100% coverage, 124 total hints).
+
+### Overview
+
+Students can request hints by clicking "💡 Dame una pista" button (next to "Editor" heading). Hints are revealed progressively to guide learning without giving away the solution immediately.
+
+### Hint Levels Structure
+
+**Level 1: General Orientation**
+- Identify what data to read
+- Overall problem structure
+- Key concepts reminder
+
+**Level 2: Function Guidance**
+- Which functions/methods to use
+- Expected output format
+- Main operations needed
+
+**Level 3: Syntax & Code Examples**
+- Specific syntax examples
+- Code fragments
+- Formulas or patterns
+
+**Level 4: Near-Complete Solution**
+- Step-by-step explanation
+- All necessary elements mentioned
+- Not literal code, but very close
+
+### Implementation
+
+**Frontend (Playground.tsx)**:
+- `currentHintLevel` state tracks progress (0-4)
+- Resets to 0 when problem changes
+- Button shows counter: "(2/4)" when hints used
+- Button color: green (available) → gray (exhausted)
+- Tooltip shows next hint level
+
+**Backend (metadata.json)**:
+```json
+{
+  "hints": [
+    "Level 1 hint text...",
+    "Level 2 hint text...",
+    "Level 3 hint text...",
+    "Level 4 hint text..."
+  ]
+}
+```
+
+**TypeScript Types**:
+- `ProblemMetadata` interface includes `hints?: string[]`
+- Field is optional (problems without hints show generic message)
+
+### Adding Hints to New Problems
+
+**Method 1: Manual**
+Edit `backend/problems/{problem_id}/metadata.json`:
+```json
+{
+  ...existing fields...,
+  "hints": [
+    "Your level 1 hint",
+    "Your level 2 hint",
+    "Your level 3 hint",
+    "Your level 4 hint"
+  ]
+}
+```
+
+**Method 2: Automated (Generic Hints)**
+```bash
+python add_hints_to_problems.py
+```
+This script adds generic 4-level hints to all problems that don't have them.
+
+### Best Practices for Writing Hints
+
+**Do**:
+✅ Make each hint progressively more specific
+✅ Customize hints for each problem
+✅ Explain WHAT to do, not give literal code
+✅ Use syntax examples in level 3-4
+✅ Mention common errors/pitfalls
+
+**Don't**:
+❌ Repeat the problem statement
+❌ Give solution in level 1-2
+❌ Be too vague ("think harder")
+❌ Make hints too long (max 2-3 sentences)
+❌ Give literal code solution
+
+### Example Hint Sets
+
+**sec_saludo (custom)**:
+```json
+[
+  "Recuerda que debes crear una función main() que lea la entrada con input().",
+  "Usa print() para mostrar el resultado. El formato debe ser exactamente 'Hola, {nombre}!'.",
+  "Puedes usar f-strings para formatear el texto: f'Hola, {nombre}!'",
+  "Solución completa: Lee el nombre con input(), formatea con f-string y usa print()."
+]
+```
+
+**Generic hints** (used by 29 problems):
+```json
+[
+  "Lee cuidadosamente el enunciado del problema y identifica qué datos necesitas leer con input().",
+  "Recuerda que debes crear una función main() que contenga toda tu lógica. Usa print() para mostrar el resultado.",
+  "Revisa el código starter provisto. Completa la sección TODO con la lógica necesaria según el enunciado.",
+  "Asegúrate de seguir el formato de salida exacto que pide el problema. Revisa los ejemplos de entrada/salida."
+]
+```
+
+### UI/UX Behavior
+
+- **Button text**: "💡 Dame una pista" → "💡 Dame una pista (2/4)" after use
+- **Button color**: #4CAF50 (green) → #9E9E9E (gray when exhausted)
+- **Alert format**: "💡 Pista X de Y:\n\n{hint text}"
+- **Last hint**: Adds warning "⚠️ Esta es la última pista disponible."
+- **Exhausted**: Shows "🎓 Ya has visto todas las pistas (4/4)"
+- **Disabled**: When no problem selected
+- **Reset**: Automatic when changing problems
+
+For complete documentation, see [HINT_SYSTEM.md](HINT_SYSTEM.md).
 
 ## Security Implementation
 
