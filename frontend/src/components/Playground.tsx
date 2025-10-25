@@ -388,6 +388,17 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
 
         <div className="panel">
           <h2>💻 Editor</h2>
+          <div className="paste-warning" style={{
+            backgroundColor: '#fff3cd',
+            color: '#856404',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            marginBottom: '10px',
+            fontSize: '13px',
+            border: '1px solid #ffeaa7'
+          }}>
+            ℹ️ <strong>Nota:</strong> Pegar código está deshabilitado para fomentar el aprendizaje. Escribe tu solución.
+          </div>
           <div className="editor-wrapper">
             <Editor
               height="400px"
@@ -395,6 +406,27 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
               theme="vs-dark"
               value={code}
               onChange={(value) => setCode(value || '')}
+              onMount={(editor, monaco) => {
+                // Prevent paste to avoid AI-generated code copying
+                editor.onDidPaste((e) => {
+                  e.preventDefault?.()
+                })
+
+                // Also prevent paste via keyboard shortcuts
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+                  // Block paste command
+                  alert('⚠️ Pegar código está deshabilitado. Por favor, escribe tu solución.')
+                })
+
+                // Prevent paste via context menu
+                const domNode = editor.getDomNode()
+                if (domNode) {
+                  domNode.addEventListener('paste', (e) => {
+                    e.preventDefault()
+                    alert('⚠️ Pegar código está deshabilitado. Por favor, escribe tu solución.')
+                  })
+                }
+              }}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,

@@ -478,6 +478,22 @@ Additional safeguards:
 - Non-root user (uid 1000)
 - Workspace cleanup after execution
 
+**3. Anti-Paste Protection** ([frontend/src/components/Playground.tsx](frontend/src/components/Playground.tsx))
+
+Prevents students from pasting AI-generated code to encourage active learning:
+- Blocks Ctrl/Cmd+V keyboard shortcut
+- Blocks right-click → paste
+- Blocks DOM-level paste events
+- Shows educational warning message
+
+Benefits:
+- Fosters active code writing
+- Improves learning retention
+- Reduces AI-generated code copying
+- Maintains fair assessment
+
+**Important**: Does NOT block typing, autocomplete, or legitimate learning aids. See [ANTI_PASTE_FEATURE.md](ANTI_PASTE_FEATURE.md) for details.
+
 **Limitations**: For high-stakes environments, consider gVisor runtime, separate VM/host for worker, or static analysis.
 
 ## Service Layer Architecture

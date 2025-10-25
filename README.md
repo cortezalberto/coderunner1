@@ -36,6 +36,7 @@ Ver [REFACTORING_SESSION_2025-10-25.md](REFACTORING_SESSION_2025-10-25.md) para 
 - 📈 **Resultados Detallados**: Visualización de tests, mensajes de error y tiempos de ejecución
 - 🔒 **Ejecución Segura**: Código ejecutado en contenedores Docker aislados
 - 💾 **Auto-guardado**: Código persistido en localStorage del navegador
+- 🚫 **Anti-Paste**: Previene copiar código de IA para fomentar aprendizaje activo
 
 ### Para Instructores
 - 📊 **Panel Administrativo**: Estadísticas y envíos de estudiantes
@@ -43,6 +44,7 @@ Ver [REFACTORING_SESSION_2025-10-25.md](REFACTORING_SESSION_2025-10-25.md) para 
 - 🎓 **Problemas Personalizables**: Estructura simple para crear ejercicios
 - 🔍 **Analíticas Detalladas**: Promedios de puntuación y tasas de completado
 - 📝 **Sistema de Rúbricas**: Puntuación flexible por test
+- 🛡️ **Integridad Académica**: Protección anti-paste para evaluaciones justas
 
 ### Características Técnicas
 - ⚡ **Ejecución Rápida**: ~2-3 segundos por envío
