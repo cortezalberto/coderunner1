@@ -1,1 +1,15 @@
-{"title":"Área de un círculo","subject_id":"programacion-1","unit_id":"estructuras-secuenciales","difficulty":"easy","tags":["geometria","pi","formula"],"timeout_sec":3.0,"memory_mb":128}
+{
+  "title": "Área de un círculo",
+  "subject_id": "programacion-1",
+  "unit_id": "estructuras-secuenciales",
+  "difficulty": "easy",
+  "tags": ["geometria", "pi", "formula"],
+  "timeout_sec": 3.0,
+  "memory_mb": 128,
+  "hints": [
+    "La fórmula del área de un círculo es A = π × r²",
+    "Python tiene una constante para π en el módulo math: import math y luego usa math.pi",
+    "Lee el radio con float(input()) y eleva al cuadrado con r**2 o r*r",
+    "Solución: import math, luego area = math.pi * radio * radio"
+  ]
+}

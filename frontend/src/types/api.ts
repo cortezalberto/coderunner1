@@ -18,6 +18,7 @@ export interface ProblemMetadata {
   tags?: string[]
   timeout_sec?: number
   memory_mb?: number
+  hints?: string[]
 }
 
 // Problem types

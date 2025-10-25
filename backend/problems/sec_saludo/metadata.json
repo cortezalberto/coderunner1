@@ -5,5 +5,11 @@
   "difficulty": "easy",
   "tags": ["variables", "strings", "concatenacion"],
   "timeout_sec": 3.0,
-  "memory_mb": 128
+  "memory_mb": 128,
+  "hints": [
+    "Recuerda que debes crear una función main() que lea la entrada con input().",
+    "Usa print() para mostrar el resultado. El formato debe ser exactamente 'Hola, {nombre}!'.",
+    "Puedes usar f-strings para formatear el texto: f'Hola, {nombre}!'",
+    "Solución completa: Lee el nombre con input(), formatea con f-string y usa print() para mostrar el saludo."
+  ]
 }

@@ -39,6 +39,9 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
   // Result state
   const [result, setResult] = useState<SubmissionResult | null>(null)
 
+  // Hint system state
+  const [currentHintLevel, setCurrentHintLevel] = useState<number>(0)
+
   // Refs for cleanup
   const pollingControllerRef = useRef<AbortController | null>(null)
   const pollingTimeoutRef = useRef<number | null>(null)
@@ -244,6 +247,11 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
     }
   }, [code, selectedProblemId])
 
+  // Reset hint level when problem changes
+  useEffect(() => {
+    setCurrentHintLevel(0)
+  }, [selectedProblemId])
+
   // Cleanup polling on unmount or when problem changes
   useEffect(() => {
     return () => {
@@ -371,6 +379,31 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
     }
   }
 
+  const handleHint = () => {
+    if (!selectedProblem || !selectedProblem.metadata.hints || selectedProblem.metadata.hints.length === 0) {
+      alert('💡 Pista: Lee cuidadosamente el enunciado del problema. Asegúrate de usar la función main() y leer la entrada con input().')
+      return
+    }
+
+    const hints = selectedProblem.metadata.hints
+    const maxLevel = hints.length
+
+    if (currentHintLevel >= maxLevel) {
+      alert(`🎓 Ya has visto todas las pistas disponibles (${maxLevel}/${maxLevel}).\n\n¡Intenta resolver el problema con la información que tienes!`)
+      return
+    }
+
+    const hintMessage = `💡 Pista ${currentHintLevel + 1} de ${maxLevel}:\n\n${hints[currentHintLevel]}`
+
+    if (currentHintLevel === maxLevel - 1) {
+      alert(`${hintMessage}\n\n⚠️ Esta es la última pista disponible.`)
+    } else {
+      alert(hintMessage)
+    }
+
+    setCurrentHintLevel(currentHintLevel + 1)
+  }
+
   const loading = submitting || polling
 
   return (
@@ -484,23 +517,43 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <h2 style={{ margin: 0 }}>💻 Editor</h2>
             <button
-              onClick={() => alert('💡 Pista: Lee cuidadosamente el enunciado del problema. Asegúrate de usar la función main() y leer la entrada con input().')}
+              onClick={handleHint}
               style={{
-                backgroundColor: '#4CAF50',
+                backgroundColor: currentHintLevel >= (selectedProblem?.metadata.hints?.length || 0) && selectedProblem?.metadata.hints ? '#9E9E9E' : '#4CAF50',
                 color: 'white',
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '4px',
-                cursor: 'pointer',
+                cursor: !selectedProblem ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
                 fontWeight: '500',
-                transition: 'background-color 0.3s'
+                transition: 'background-color 0.3s',
+                opacity: !selectedProblem ? 0.6 : 1
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+              onMouseEnter={(e) => {
+                if (selectedProblem && currentHintLevel < (selectedProblem?.metadata.hints?.length || 0)) {
+                  e.currentTarget.style.backgroundColor = '#45a049'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentHintLevel >= (selectedProblem?.metadata.hints?.length || 0) && selectedProblem?.metadata.hints) {
+                  e.currentTarget.style.backgroundColor = '#9E9E9E'
+                } else {
+                  e.currentTarget.style.backgroundColor = '#4CAF50'
+                }
+              }}
               disabled={!selectedProblem}
+              title={
+                !selectedProblem
+                  ? 'Selecciona un problema primero'
+                  : currentHintLevel >= (selectedProblem?.metadata.hints?.length || 0) && selectedProblem?.metadata.hints
+                    ? `Has visto todas las pistas (${currentHintLevel}/${selectedProblem.metadata.hints.length})`
+                    : selectedProblem?.metadata.hints
+                      ? `Pista ${currentHintLevel + 1} de ${selectedProblem.metadata.hints.length}`
+                      : 'Ver pista'
+              }
             >
-              💡 Dame una pista
+              💡 Dame una pista {selectedProblem?.metadata.hints && currentHintLevel > 0 && `(${currentHintLevel}/${selectedProblem.metadata.hints.length})`}
             </button>
           </div>
           <div className="paste-warning" style={{
