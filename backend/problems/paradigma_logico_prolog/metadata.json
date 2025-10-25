@@ -10,5 +10,11 @@
     "consultas"
   ],
   "timeout_sec": 5.0,
-  "memory_mb": 256
+  "memory_mb": 256,
+  "hints": [
+    "Lee cuidadosamente el enunciado del problema y identifica qué datos necesitas leer con input().",
+    "Recuerda que debes crear una función main() que contenga toda tu lógica. Usa print() para mostrar el resultado.",
+    "Revisa el código starter provisto. Completa la sección TODO con la lógica necesaria según el enunciado.",
+    "Asegúrate de seguir el formato de salida exacto que pide el problema. Revisa los ejemplos de entrada/salida."
+  ]
 }
