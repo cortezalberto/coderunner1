@@ -481,7 +481,28 @@ function Playground({ onSubjectChange }: PlaygroundProps) {
         </div>
 
         <div className="panel">
-          <h2>💻 Editor</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h2 style={{ margin: 0 }}>💻 Editor</h2>
+            <button
+              onClick={() => alert('💡 Pista: Lee cuidadosamente el enunciado del problema. Asegúrate de usar la función main() y leer la entrada con input().')}
+              style={{
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'background-color 0.3s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+              disabled={!selectedProblem}
+            >
+              💡 Dame una pista
+            </button>
+          </div>
           <div className="paste-warning" style={{
             backgroundColor: '#fff3cd',
             color: '#856404',
