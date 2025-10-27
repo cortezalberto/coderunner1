@@ -1,7 +1,13 @@
 """
 SQLAlchemy models for submissions and test results
+
+PERFORMANCE: Composite indexes for 300 concurrent users
+- (status, created_at): Optimizes status filtering + ordering (admin queries)
+- (problem_id, status): Optimizes per-problem statistics (admin panel)
+- (student_id, created_at): Optimizes student submission history
+- (problem_id, created_at): Optimizes problem submission history
 """
-from sqlalchemy import Column, Integer, String, Float, Text, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime, ForeignKey, Boolean, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -17,7 +23,7 @@ class Submission(Base):
     code = Column(Text, nullable=False)
 
     # Resultados
-    status = Column(String(50), default="pending")  # pending, running, completed, failed, timeout
+    status = Column(String(50), default="pending", index=True)  # pending, running, completed, failed, timeout
     ok = Column(Boolean, default=False)
     score_total = Column(Float, default=0.0)
     score_max = Column(Float, default=0.0)
@@ -36,6 +42,21 @@ class Submission(Base):
 
     # Relación con resultados de tests individuales
     test_results = relationship("TestResult", back_populates="submission", cascade="all, delete-orphan")
+
+    # Composite indexes for query optimization
+    __table_args__ = (
+        # Optimizes: ORDER BY created_at DESC WHERE status = 'X'
+        Index('idx_status_created', 'status', 'created_at'),
+
+        # Optimizes: GROUP BY problem_id WHERE status = 'completed'
+        Index('idx_problem_status', 'problem_id', 'status'),
+
+        # Optimizes: WHERE student_id = 'X' ORDER BY created_at DESC
+        Index('idx_student_created', 'student_id', 'created_at'),
+
+        # Optimizes: WHERE problem_id = 'X' ORDER BY created_at DESC
+        Index('idx_problem_created', 'problem_id', 'created_at'),
+    )
 
 
 class TestResult(Base):

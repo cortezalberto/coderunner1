@@ -8,7 +8,8 @@
       "Bash(do:*)",
       "Bash(/dev/null)",
       "Bash(done)",
-      "Bash(timeout 10 bash -c \"sleep 3 && curl -s http://localhost:8000/api/problems | python -m json.tool | head -50\")"
+      "Bash(timeout 10 bash -c \"sleep 3 && curl -s http://localhost:8000/api/problems | python -m json.tool | head -50\")",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

@@ -58,7 +58,10 @@ def _copy_test_file(src: pathlib.Path, dest: pathlib.Path, file_type: str) -> No
 def run_submission_in_sandbox(submission_id: int, problem_id: str, code: str,
                                timeout_sec=None, memory_mb=None):
     """
-    Execute student code in isolated Docker container
+    Execute student code in isolated Docker container.
+
+    PERFORMANCE: Uses connection pooling from backend.database (20 base + 30 overflow).
+    Connection is properly closed via try/finally to return to pool.
 
     Steps:
     1. Create temp workspace
@@ -71,8 +74,13 @@ def run_submission_in_sandbox(submission_id: int, problem_id: str, code: str,
     db: Session = SessionLocal()
 
     try:
+        # Validate connection health (pool_pre_ping=True in database.py)
         submission = db.query(Submission).filter(Submission.id == submission_id).first()
         if not submission:
+            logger.error(
+                f"Submission {submission_id} not found in database",
+                extra={"submission_id": submission_id}
+            )
             raise Exception(f"Submission {submission_id} not found")
 
         # Actualizar estado
@@ -229,11 +237,30 @@ def pytest_sessionfinish(session, exitstatus):
 
     except Exception as e:
         # Marcar como fallado
-        submission.status = "failed"
-        submission.error_message = str(e)[:1000]
-        submission.completed_at = datetime.utcnow()
-        db.commit()
+        logger.error(
+            f"Submission {submission_id} failed with error: {str(e)}",
+            extra={"submission_id": submission_id, "problem_id": problem_id},
+            exc_info=True
+        )
+        try:
+            submission.status = "failed"
+            submission.error_message = str(e)[:1000]
+            submission.completed_at = datetime.utcnow()
+            db.commit()
+        except Exception as commit_error:
+            logger.error(
+                f"Failed to save error status for submission {submission_id}",
+                extra={"submission_id": submission_id, "error": str(commit_error)},
+                exc_info=True
+            )
+            db.rollback()
         raise
 
     finally:
+        # CRITICAL: Always close DB connection to return to pool
+        # Without this, connections leak and pool gets exhausted
         db.close()
+        logger.debug(
+            f"DB connection closed for submission {submission_id}",
+            extra={"submission_id": submission_id}
+        )

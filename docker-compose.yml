@@ -12,6 +12,21 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    # Production tuning for 300 concurrent users
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=512MB
+      -c effective_cache_size=1536MB
+      -c maintenance_work_mem=128MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=2621kB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U playground"]
       interval: 10s
@@ -54,9 +69,15 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app/backend:ro
-    command: uvicorn backend.app:app --host 0.0.0.0 --port 8000 --reload
+    # Production-ready Uvicorn configuration
+    # - workers=4: Multiple processes for 300 concurrent users
+    # - timeout-keep-alive=5: Close idle connections quickly
+    # - limit-concurrency=1000: Max concurrent connections per worker
+    # - backlog=2048: Queue size for pending connections
+    # - reload: Disabled in production (enable for development)
+    command: uvicorn backend.app:app --host 0.0.0.0 --port 8000 --workers 4 --timeout-keep-alive 5 --limit-concurrency 1000 --backlog 2048
 
-  # RQ Worker
+  # RQ Worker (submissions queue)
   worker:
     build:
       context: .
@@ -78,6 +99,24 @@ services:
       - ./worker:/app/worker:ro
       - ./workspaces:/workspaces
     command: python -m rq.cli worker --url redis://redis:6379/0 submissions
+
+  # Workspace cleaner (runs cleanup every 30 minutes)
+  cleaner:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://playground:playground@postgres:5432/playground
+      REDIS_URL: redis://redis:6379/0
+      WORKSPACE_DIR: /workspaces
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend:ro
+      - ./worker:/app/worker:ro
+      - ./workspaces:/workspaces
+    command: sh -c "while true; do python -c 'from worker.services.workspace_cleaner import cleanup_old_workspaces; cleanup_old_workspaces()'; sleep 1800; done"
 
   # Frontend
   frontend:
